@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>PPA.Adapter.PowerPoint</RootNamespace>
+    <AssemblyName>PPA.Adapter.PowerPoint</AssemblyName>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <DefineConstants>POWERPOINT</DefineConstants>
+    <Description>PPA PowerPoint 平台适配器 - NetOffice 实现</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\PPA.Core\PPA.Core.csproj" />
+    <ProjectReference Include="..\..\Core\PPA.Business\PPA.Business.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NetOfficeFw.PowerPoint" Version="1.9.4" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+  </ItemGroup>
+</Project>

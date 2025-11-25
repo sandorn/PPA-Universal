@@ -142,9 +142,14 @@
       <HintPath>packages\NetOfficeFw.PowerPoint.2.0.0-preview20\lib\net462\PowerPointApi.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
+    <Reference Include="VBIDEApi, Version=2.0.0.0, Culture=neutral, PublicKeyToken=297f57b43ae7c1de, processorArchitecture=MSIL">
+      <HintPath>packages\NetOfficeFw.VBIDE.2.0.0-preview20\lib\net462\VBIDEApi.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <HintPath>packages\stdole.7.0.3300\lib\net10\stdole.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -155,10 +160,6 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="VBIDEApi, Version=2.0.0.0, Culture=neutral, PublicKeyToken=297f57b43ae7c1de, processorArchitecture=MSIL">
-      <HintPath>packages\NetOfficeFw.VBIDE.2.0.0-preview20\lib\net462\VBIDEApi.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.7.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
       <Private>True</Private>
@@ -176,30 +177,29 @@
       <Private>True</Private>
     </Reference>
   </ItemGroup>
-  <!-- 新架构 DLL 引用（暂时禁用，先测试原项目是否正常）
+  <!-- 新架构 DLL 引用 -->
   <ItemGroup>
-    <Reference Include="PPA.Core.New">
-      <HintPath>..\src\Core\PPA.Core\bin\Debug\PPA.Core.dll</HintPath>
+    <Reference Include="PPA.Core.Universal">
+      <HintPath>..\..\Core\PPA.Core\bin\Debug\PPA.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="PPA.Business.New">
-      <HintPath>..\src\Core\PPA.Business\bin\Debug\PPA.Business.dll</HintPath>
+    <Reference Include="PPA.Business.Universal">
+      <HintPath>..\..\Core\PPA.Business\bin\Debug\PPA.Business.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="PPA.Adapter.PowerPoint.New">
-      <HintPath>..\src\Adapters\PPA.Adapter.PowerPoint\bin\Debug\PPA.Adapter.PowerPoint.dll</HintPath>
+    <Reference Include="PPA.Adapter.PowerPoint.Universal">
+      <HintPath>..\..\Adapters\PPA.Adapter.PowerPoint\bin\Debug\PPA.Adapter.PowerPoint.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="PPA.Universal">
-      <HintPath>..\src\Hosts\PPA.Universal\bin\Debug\PPA.Universal.dll</HintPath>
+      <HintPath>..\..\Hosts\PPA.Universal\bin\Debug\PPA.Universal.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="PPA.Legacy">
-      <HintPath>..\src\Legacy\PPA.Legacy\bin\Debug\PPA.Legacy.dll</HintPath>
+      <HintPath>..\..\Legacy\PPA.Legacy\bin\Debug\PPA.Legacy.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
-  -->
   <!-- 可选的VSTO引用，仅在Visual Studio环境中需要 -->
   <ItemGroup Condition="Exists('$(VSToolsPath)\OfficeTools\')">
     <Reference Include="Microsoft.Office.Tools.v4.0.Framework" />
@@ -268,15 +268,13 @@
     <Compile Include="Core\Abstraction\Business\IChartFormatHelper.cs" />
     <Compile Include="Core\Abstraction\Business\ITableBatchHelper.cs" />
     <Compile Include="Core\Abstraction\Business\ITextBatchHelper.cs" />
+    <Compile Include="Core\Abstraction\Business\IChartBatchHelper.cs" />
     <Compile Include="Core\Abstraction\Infrastructure\IApplicationProvider.cs" />
-    <Compile Include="Core\Abstraction\Infrastructure\ILogger.cs" />
-    <Compile Include="Core\Abstraction\Infrastructure\LogLevel.cs" />
     <Compile Include="Core\Abstraction\Presentation\ApplicationType.cs" />
     <Compile Include="Core\Abstraction\Presentation\FeatureSupportLevel.cs" />
     <Compile Include="Core\Abstraction\Presentation\IRibbonXmlProvider.cs" />
     <Compile Include="Core\Abstraction\Presentation\IRibbonIconProvider.cs" />
     <Compile Include="Core\Abstraction\Presentation\IRibbonCommandRouter.cs" />
-    <Compile Include="Core\Abstraction\Business\IChartBatchHelper.cs" />
     <Compile Include="Core\Abstraction\Business\IAlignHelper.cs" />
     <Compile Include="Core\Abstraction\Business\IShapeBatchHelper.cs" />
     <Compile Include="Core\Abstraction\Business\IShapeHelper.cs" />
