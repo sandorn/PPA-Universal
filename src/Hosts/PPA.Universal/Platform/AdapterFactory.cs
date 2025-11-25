@@ -7,6 +7,7 @@ using PPA.Adapter.WPS.DI;
 using PPA.Core.Abstraction;
 using PPA.Logging;
 using NETOP = NetOffice.PowerPointApi;
+using NetTable = NetOffice.PowerPointApi.Table;
 
 namespace PPA.Universal.Platform
 {
@@ -88,6 +89,22 @@ namespace PPA.Universal.Platform
         {
             _logger.LogInformation("创建 WPS 上下文");
             return new WPSContext(app);
+        }
+
+        /// <summary>
+        /// 根据平台类型创建表格上下文
+        /// </summary>
+        /// <param name="table">表格对象（PowerPoint 为 NetOffice.PowerPointApi.Table，WPS 为 dynamic）</param>
+        /// <param name="platform">平台类型</param>
+        /// <returns>平台无关的表格上下文</returns>
+        public ITableContext CreateTableContext(object table, PlatformType platform)
+        {
+            return platform switch
+            {
+                PlatformType.PowerPoint => new PowerPointTableContext((NetTable)table),
+                PlatformType.WPS => new WPSTableContext(table),
+                _ => throw new InvalidOperationException($"不支持的平台类型: {platform}")
+            };
         }
 
         /// <summary>

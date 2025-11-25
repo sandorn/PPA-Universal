@@ -1,5 +1,4 @@
 using NetOffice.OfficeApi.Enums;
-using PPA.Adapter.PowerPoint;
 using PPA.Business.Abstractions;
 using PPA.Core;
 using PPA.Core.Abstraction;
@@ -8,6 +7,7 @@ using PPA.Core.Logging;
 using PPA.Legacy.Bridge;
 using PPA.Logging;
 using PPA.Manipulation.Config;
+using PPA.Universal.Platform;
 using PPA.Utilities;
 using System;
 using System.Collections.Generic;
@@ -199,7 +199,11 @@ namespace PPA.Manipulation
 				
 				if (useNewService)
 				{
-					_logger.LogInformation("使用新架构 TableFormatService");
+					// 检测平台并创建适配器工厂
+					var platform = PlatformDetector.Detect().ActivePlatform;
+					var adapterFactory = new AdapterFactory(_logger);
+					_logger.LogInformation($"使用新架构 TableFormatService，平台: {platform}");
+					
 					// 从旧配置构建格式化选项
 					var options = BuildFormatOptionsFromConfig();
 					
@@ -207,7 +211,7 @@ namespace PPA.Manipulation
 					{
 						if(table!=null)
 						{
-							var tableContext = new PowerPointTableContext(table);
+							var tableContext = adapterFactory.CreateTableContext(table, platform);
 							newService.FormatTable(tableContext, options);
 						}
 					}

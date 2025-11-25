@@ -191,6 +191,10 @@
       <HintPath>..\..\Adapters\PPA.Adapter.PowerPoint\bin\Debug\PPA.Adapter.PowerPoint.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="PPA.Adapter.WPS.Universal">
+      <HintPath>..\..\Adapters\PPA.Adapter.WPS\bin\Debug\PPA.Adapter.WPS.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="PPA.Universal">
       <HintPath>..\..\Hosts\PPA.Universal\bin\Debug\PPA.Universal.dll</HintPath>
       <Private>True</Private>
