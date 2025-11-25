@@ -1,4 +1,3 @@
-using System;
 using NETOP = NetOffice.PowerPointApi;
 
 namespace PPA.Core.Abstraction.Business
@@ -6,13 +5,6 @@ namespace PPA.Core.Abstraction.Business
 	/// <summary>
 	/// 文本批量操作辅助接口 提供文本的批量格式化功能
 	/// </summary>
-	/// <remarks>
-	/// 此接口定义了文本批量操作的接口。
-	/// <para>
-	/// <b>迁移说明：</b>此接口将逐步迁移到新架构 <c>PPA.Business.Abstractions.ITextBatchService</c>。
-	/// </para>
-	/// </remarks>
-	[Obsolete("建议迁移到 PPA.Business.Abstractions.ITextBatchService")]
 	public interface ITextBatchHelper
 	{
 		/// <summary>

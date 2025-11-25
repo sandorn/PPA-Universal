@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<hostItem xmlns="http://schemas.microsoft.com/vsta/2008/04/HostItems" 
-          className="ThisAddIn" 
-          namespace="PPA.PowerPoint.VSTO" 
-          filePath="ThisAddIn.cs" 
-          productVersion="10.0" 
-          runtimeVersion="4.0.30319.0">
-</hostItem>

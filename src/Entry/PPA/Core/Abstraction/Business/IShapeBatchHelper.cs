@@ -1,4 +1,3 @@
-using System;
 using NETOP = NetOffice.PowerPointApi;
 
 namespace PPA.Core.Abstraction.Business
@@ -6,13 +5,6 @@ namespace PPA.Core.Abstraction.Business
 	/// <summary>
 	/// 形状批量操作辅助接口 提供形状的批量操作功能
 	/// </summary>
-	/// <remarks>
-	/// 此接口定义了形状批量操作的常用功能。
-	/// <para>
-	/// <b>迁移说明：</b>此接口将逐步迁移到新架构 <c>PPA.Business.Abstractions.IShapeBatchService</c>。
-	/// </para>
-	/// </remarks>
-	[Obsolete("建议迁移到 PPA.Business.Abstractions.IShapeBatchService")]
 	public interface IShapeBatchHelper
 	{
 		/// <summary>

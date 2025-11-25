@@ -1,4 +1,3 @@
-using System;
 using NETOP = NetOffice.PowerPointApi;
 
 namespace PPA.Core.Abstraction.Business
@@ -6,14 +5,6 @@ namespace PPA.Core.Abstraction.Business
 	/// <summary>
 	/// 表格批量操作辅助接口 提供表格的批量格式化功能
 	/// </summary>
-	/// <remarks>
-	/// 此接口定义了表格批量操作的接口，通过依赖注入使用，便于测试和扩展。
-	/// <para>
-	/// <b>迁移说明：</b>此接口将逐步迁移到新架构 <c>PPA.Business.Abstractions.ITableBatchService</c>。
-	/// 新架构使用平台无关的 <c>IApplicationContext</c> 替代 NetOffice 类型。
-	/// </para>
-	/// </remarks>
-	[Obsolete("建议迁移到 PPA.Business.Abstractions.ITableBatchService")]
 	public interface ITableBatchHelper
 	{
 		/// <summary>
