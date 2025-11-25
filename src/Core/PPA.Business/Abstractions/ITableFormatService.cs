@@ -55,6 +55,15 @@ namespace PPA.Business.Abstractions
         /// <summary>是否应用字体样式</summary>
         public bool ApplyFont { get; set; } = true;
 
+        /// <summary>是否应用表格样式</summary>
+        public bool ApplyTableStyle { get; set; } = true;
+
+        /// <summary>表格样式 ID（GUID 格式）</summary>
+        public string TableStyleId { get; set; }
+
+        /// <summary>表格设置</summary>
+        public TableSettings Settings { get; set; }
+
         /// <summary>表头样式</summary>
         public RowStyle HeaderStyle { get; set; }
 
@@ -63,6 +72,39 @@ namespace PPA.Business.Abstractions
 
         /// <summary>交替行样式（可选）</summary>
         public RowStyle AlternateRowStyle { get; set; }
+
+        /// <summary>是否启用数字格式化</summary>
+        public bool AutoNumberFormat { get; set; } = true;
+
+        /// <summary>数字格式化保留的小数位数</summary>
+        public int DecimalPlaces { get; set; } = 0;
+
+        /// <summary>负数文本颜色（RGB）</summary>
+        public int NegativeTextColor { get; set; } = 255; // 红色
+    }
+
+    /// <summary>
+    /// 表格设置
+    /// </summary>
+    public class TableSettings
+    {
+        /// <summary>首行特殊格式</summary>
+        public bool FirstRow { get; set; } = true;
+
+        /// <summary>首列特殊格式</summary>
+        public bool FirstCol { get; set; } = false;
+
+        /// <summary>末行特殊格式</summary>
+        public bool LastRow { get; set; } = false;
+
+        /// <summary>末列特殊格式</summary>
+        public bool LastCol { get; set; } = false;
+
+        /// <summary>水平条带</summary>
+        public bool HorizBanding { get; set; } = false;
+
+        /// <summary>垂直条带</summary>
+        public bool VertBanding { get; set; } = false;
     }
 
     /// <summary>
@@ -97,8 +139,17 @@ namespace PPA.Business.Abstractions
         /// <summary>文本对齐方式</summary>
         public TextAlignment? Alignment { get; set; }
 
-        /// <summary>边框样式</summary>
-        public BorderStyle? Border { get; set; }
+        /// <summary>上边框样式</summary>
+        public BorderStyle? TopBorder { get; set; }
+
+        /// <summary>下边框样式</summary>
+        public BorderStyle? BottomBorder { get; set; }
+
+        /// <summary>左边框样式</summary>
+        public BorderStyle? LeftBorder { get; set; }
+
+        /// <summary>右边框样式</summary>
+        public BorderStyle? RightBorder { get; set; }
 
         /// <summary>
         /// 转换为 FontStyle

@@ -34,6 +34,13 @@ namespace PPA.Core.Abstraction
         /// <param name="width">宽度</param>
         void SetColumnWidth(int column, float width);
 
+        /// <summary>应用表格样式</summary>
+        /// <param name="styleId">样式 ID（GUID 格式）</param>
+        void ApplyStyle(string styleId);
+
+        /// <summary>设置表格选项</summary>
+        void SetTableOptions(bool firstRow, bool firstCol, bool lastRow, bool lastCol, bool horizBanding, bool vertBanding);
+
         /// <summary>获取原生表格对象</summary>
         object NativeTable { get; }
     }

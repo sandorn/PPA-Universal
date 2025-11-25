@@ -142,7 +142,16 @@ namespace PPA.Adapter.PowerPoint
 
             border.Visible = NetOffice.OfficeApi.Enums.MsoTriState.msoTrue;
             border.Weight = style.Weight;
-            border.ForeColor.RGB = style.Color;
+
+            // 优先使用主题色，否则使用 RGB
+            if (style.ThemeColorIndex.HasValue)
+            {
+                border.ForeColor.ObjectThemeColor = (NetOffice.OfficeApi.Enums.MsoThemeColorIndex)style.ThemeColorIndex.Value;
+            }
+            else
+            {
+                border.ForeColor.RGB = style.Color;
+            }
 
             switch (style.LineStyle)
             {

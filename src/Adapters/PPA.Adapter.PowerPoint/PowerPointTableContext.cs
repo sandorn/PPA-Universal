@@ -81,6 +81,31 @@ namespace PPA.Adapter.PowerPoint
             catch { }
         }
 
+        public void ApplyStyle(string styleId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(styleId) || _table == null) return;
+                _table.ApplyStyle(styleId, false);
+            }
+            catch { }
+        }
+
+        public void SetTableOptions(bool firstRow, bool firstCol, bool lastRow, bool lastCol, bool horizBanding, bool vertBanding)
+        {
+            try
+            {
+                if (_table == null) return;
+                _table.FirstRow = firstRow;
+                _table.FirstCol = firstCol;
+                _table.LastRow = lastRow;
+                _table.LastCol = lastCol;
+                _table.HorizBanding = horizBanding;
+                _table.VertBanding = vertBanding;
+            }
+            catch { }
+        }
+
         public object NativeTable => _table;
 
         /// <summary>

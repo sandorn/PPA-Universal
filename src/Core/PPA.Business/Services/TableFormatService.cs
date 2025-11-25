@@ -31,6 +31,25 @@ namespace PPA.Business.Services
 
             try
             {
+                // 应用表格样式
+                if (options.ApplyTableStyle && !string.IsNullOrEmpty(options.TableStyleId))
+                {
+                    table.ApplyStyle(options.TableStyleId);
+                }
+
+                // 设置表格选项
+                if (options.Settings != null)
+                {
+                    table.SetTableOptions(
+                        options.Settings.FirstRow,
+                        options.Settings.FirstCol,
+                        options.Settings.LastRow,
+                        options.Settings.LastCol,
+                        options.Settings.HorizBanding,
+                        options.Settings.VertBanding
+                    );
+                }
+
                 // 格式化表头
                 if (options.FormatHeader && options.HeaderStyle != null && table.RowCount > 0)
                 {
@@ -47,6 +66,12 @@ namespace PPA.Business.Services
                             : options.DataRowStyle;
                         SetRowStyle(table, row, style);
                     }
+                }
+
+                // 末行下边框（使用表头边框样式）
+                if (options.FormatHeader && options.HeaderStyle != null && table.RowCount > 1)
+                {
+                    SetLastRowBottomBorder(table, options.HeaderStyle);
                 }
 
                 _logger.LogInformation("表格格式化完成");
@@ -76,7 +101,8 @@ namespace PPA.Business.Services
                     Bold = true,
                     ThemeColorIndex = 13, // 深色1 (dk1)
                     Alignment = TextAlignment.Center,
-                    Border = BorderStyle.Solid(0x2B579A, 1.5f) // 蓝色边框
+                    TopBorder = BorderStyle.SolidTheme(5, 1.75f),    // Accent1
+                    BottomBorder = BorderStyle.SolidTheme(5, 1.75f)  // Accent1
                 },
                 DataRowStyle = new RowStyle
                 {
@@ -86,7 +112,7 @@ namespace PPA.Business.Services
                     FontSize = 11,
                     Bold = false,
                     ThemeColorIndex = 13, // 深色1 (dk1)
-                    Border = BorderStyle.Solid(0xD0D0D0, 0.75f) // 浅灰边框
+                    TopBorder = BorderStyle.SolidTheme(6, 1.0f)      // Accent2
                 }
             };
 
@@ -127,9 +153,42 @@ namespace PPA.Business.Services
                 }
 
                 // 设置边框
-                if (style.Border.HasValue)
+                if (style.TopBorder.HasValue)
                 {
-                    cell.SetBorder(BorderEdge.All, style.Border.Value);
+                    cell.SetBorder(BorderEdge.Top, style.TopBorder.Value);
+                }
+                if (style.BottomBorder.HasValue)
+                {
+                    cell.SetBorder(BorderEdge.Bottom, style.BottomBorder.Value);
+                }
+                if (style.LeftBorder.HasValue)
+                {
+                    cell.SetBorder(BorderEdge.Left, style.LeftBorder.Value);
+                }
+                if (style.RightBorder.HasValue)
+                {
+                    cell.SetBorder(BorderEdge.Right, style.RightBorder.Value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 设置末行下边框
+        /// </summary>
+        private void SetLastRowBottomBorder(ITableContext table, RowStyle headerStyle)
+        {
+            if (table == null || table.RowCount == 0) return;
+
+            int lastRow = table.RowCount;
+            var borderStyle = headerStyle.BottomBorder ?? headerStyle.TopBorder;
+            if (!borderStyle.HasValue) return;
+
+            for (int col = 1; col <= table.ColumnCount; col++)
+            {
+                var cell = table.GetCell(lastRow, col);
+                if (cell != null)
+                {
+                    cell.SetBorder(BorderEdge.Bottom, borderStyle.Value);
                 }
             }
         }

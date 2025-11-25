@@ -119,6 +119,9 @@ namespace PPA.Core.Abstraction
         /// <summary>边框颜色（RGB）</summary>
         public int Color { get; set; }
 
+        /// <summary>主题颜色索引（优先于 RGB）</summary>
+        public int? ThemeColorIndex { get; set; }
+
         /// <summary>边框可见性</summary>
         public bool Visible { get; set; }
 
@@ -127,12 +130,25 @@ namespace PPA.Core.Abstraction
 
         public static BorderStyle None => new BorderStyle { Visible = false };
 
+        /// <summary>使用 RGB 颜色创建实线边框</summary>
         public static BorderStyle Solid(int color, float weight = 1.0f)
         {
             return new BorderStyle
             {
                 Visible = true,
                 Color = color,
+                Weight = weight,
+                LineStyle = BorderLineStyle.Solid
+            };
+        }
+
+        /// <summary>使用主题色创建实线边框</summary>
+        public static BorderStyle SolidTheme(int themeColorIndex, float weight = 1.0f)
+        {
+            return new BorderStyle
+            {
+                Visible = true,
+                ThemeColorIndex = themeColorIndex,
                 Weight = weight,
                 LineStyle = BorderLineStyle.Solid
             };

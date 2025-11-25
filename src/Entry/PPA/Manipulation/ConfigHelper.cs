@@ -78,5 +78,56 @@ namespace PPA.Manipulation
 		{
 			return cm*28.35f;
 		}
+
+		/// <summary>
+		/// 将主题颜色名称转换为整数索引值（用于新架构）
+		/// </summary>
+		public static int? GetThemeColorIndexValue(string themeColorName)
+		{
+			if(string.IsNullOrEmpty(themeColorName))
+				return null;
+
+			return themeColorName.ToLower() switch
+			{
+				"dark1" => 13,   // msoThemeColorDark1
+				"dark2" => 14,   // msoThemeColorDark2
+				"light1" => 15,  // msoThemeColorLight1
+				"light2" => 16,  // msoThemeColorLight2
+				"accent1" => 5,  // msoThemeColorAccent1
+				"accent2" => 6,  // msoThemeColorAccent2
+				"accent3" => 7,  // msoThemeColorAccent3
+				"accent4" => 8,  // msoThemeColorAccent4
+				"accent5" => 9,  // msoThemeColorAccent5
+				"accent6" => 10, // msoThemeColorAccent6
+				"hyperlink" => 11,
+				"followedhyperlink" => 12,
+				_ => null
+			};
+		}
+
+		/// <summary>
+		/// 获取主题颜色的默认 RGB 值（近似值，用于边框等）
+		/// </summary>
+		public static int GetThemeColorRgb(string themeColorName)
+		{
+			if(string.IsNullOrEmpty(themeColorName))
+				return 0x000000;
+
+			// 返回常见主题色的近似 RGB 值
+			return themeColorName.ToLower() switch
+			{
+				"dark1" => 0x000000,    // 黑色
+				"dark2" => 0x44546A,    // 深灰蓝
+				"light1" => 0xFFFFFF,   // 白色
+				"light2" => 0xE7E6E6,   // 浅灰
+				"accent1" => 0x4472C4,  // 蓝色
+				"accent2" => 0xED7D31,  // 橙色
+				"accent3" => 0xA5A5A5,  // 灰色
+				"accent4" => 0xFFC000,  // 金色
+				"accent5" => 0x5B9BD5,  // 淡蓝
+				"accent6" => 0x70AD47,  // 绿色
+				_ => 0x000000
+			};
+		}
 	}
 }

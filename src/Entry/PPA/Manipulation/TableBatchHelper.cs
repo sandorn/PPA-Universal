@@ -2,11 +2,13 @@ using NetOffice.OfficeApi.Enums;
 using PPA.Adapter.PowerPoint;
 using PPA.Business.Abstractions;
 using PPA.Core;
+using PPA.Core.Abstraction;
 using PPA.Core.Abstraction.Business;
 using PPA.Core.Abstraction.Infrastructure;
 using PPA.Core.Logging;
 using PPA.Legacy.Bridge;
 using PPA.Logging;
+using PPA.Manipulation.Config;
 using PPA.Utilities;
 using System;
 using System.Collections.Generic;
@@ -192,16 +194,34 @@ namespace PPA.Manipulation
 
 			try
 			{
-				// 新架构 TableFormatService 基础功能已验证通过
-				// 但尚未集成：1) 配置文件 2) 表格样式 3) 数字格式化
-				// 暂时使用旧实现，后续版本完善新架构后切换
-				// var newService = LegacyServiceBridge.GetService<ITableFormatService>();
+				// 尝试使用新架构服务
+				var newService = LegacyServiceBridge.GetService<ITableFormatService>();
+				bool useNewService = newService != null;
 				
-				foreach(var (shape, table) in tableShapes)
+				if (useNewService)
 				{
-					if(table!=null)
+					_logger.LogInformation("使用新架构 TableFormatService");
+					// 从旧配置构建格式化选项
+					var options = BuildFormatOptionsFromConfig();
+					
+					foreach(var (shape, table) in tableShapes)
 					{
-						tableFormatHelper.FormatTables(table);
+						if(table!=null)
+						{
+							var tableContext = new PowerPointTableContext(table);
+							newService.FormatTable(tableContext, options);
+						}
+					}
+				}
+				else
+				{
+					_logger.LogInformation("使用旧实现 TableFormatHelper");
+					foreach(var (shape, table) in tableShapes)
+					{
+						if(table!=null)
+						{
+							tableFormatHelper.FormatTables(table);
+						}
 					}
 				}
 
@@ -238,6 +258,71 @@ namespace PPA.Manipulation
 			}
 
 			return _shapeHelper.ValidateSelection(netApp,showWarningWhenInvalid: false);
+		}
+
+		/// <summary>
+		/// 从旧配置构建新架构的格式化选项
+		/// </summary>
+		private static TableFormatOptions BuildFormatOptionsFromConfig()
+		{
+			var config = FormattingConfig.Instance?.Table;
+			if (config == null)
+			{
+				return new TableFormatOptions();
+			}
+
+			return new TableFormatOptions
+			{
+				FormatHeader = true,
+				FormatDataRows = true,
+				ApplyBorders = true,
+				ApplyFont = true,
+				ApplyTableStyle = true,
+				TableStyleId = config.StyleId,
+				AutoNumberFormat = config.AutoNumberFormat,
+				DecimalPlaces = config.DecimalPlaces,
+				NegativeTextColor = config.NegativeTextColor,
+				Settings = new TableSettings
+				{
+					FirstRow = config.TableSettings?.FirstRow ?? true,
+					FirstCol = config.TableSettings?.FirstCol ?? false,
+					LastRow = config.TableSettings?.LastRow ?? false,
+					LastCol = config.TableSettings?.LastCol ?? false,
+					HorizBanding = config.TableSettings?.HorizBanding ?? false,
+					VertBanding = config.TableSettings?.VertBanding ?? false
+				},
+				HeaderStyle = new RowStyle
+				{
+					HideBackground = true,
+					FontName = config.HeaderRowFont?.Name ?? "+mn-lt",
+					FontNameFarEast = config.HeaderRowFont?.NameFarEast ?? "+mn-ea",
+					FontSize = config.HeaderRowFont?.Size ?? 10f,
+					Bold = config.HeaderRowFont?.Bold ?? true,
+					ThemeColorIndex = ConfigHelper.GetThemeColorIndexValue(config.HeaderRowFont?.ThemeColor),
+					Alignment = TextAlignment.Center,
+					TopBorder = BorderStyle.SolidTheme(
+						ConfigHelper.GetThemeColorIndexValue(config.HeaderRowBorderColor) ?? 5,
+						config.HeaderRowBorderWidth
+					),
+					BottomBorder = BorderStyle.SolidTheme(
+						ConfigHelper.GetThemeColorIndexValue(config.HeaderRowBorderColor) ?? 5,
+						config.HeaderRowBorderWidth
+					)
+				},
+				DataRowStyle = new RowStyle
+				{
+					HideBackground = true,
+					FontName = config.DataRowFont?.Name ?? "+mn-lt",
+					FontNameFarEast = config.DataRowFont?.NameFarEast ?? "+mn-ea",
+					FontSize = config.DataRowFont?.Size ?? 9f,
+					Bold = config.DataRowFont?.Bold ?? false,
+					ThemeColorIndex = ConfigHelper.GetThemeColorIndexValue(config.DataRowFont?.ThemeColor),
+					TopBorder = BorderStyle.SolidTheme(
+						ConfigHelper.GetThemeColorIndexValue(config.DataRowBorderColor) ?? 6,
+						config.DataRowBorderWidth
+					)
+				}
+			};
 		}
 
 		#endregion 内部实现
