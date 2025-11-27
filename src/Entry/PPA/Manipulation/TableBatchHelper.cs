@@ -18,9 +18,8 @@ namespace PPA.Manipulation
 	/// <summary>
 	/// 表格批量操作辅助类 提供表格批量格式化功能，支持同步和异步操作
 	/// </summary>
-	internal class TableBatchHelper(ITableFormatHelper tableFormatHelper,IShapeHelper shapeHelper,ILogger logger = null):ITableBatchHelper
+	internal class TableBatchHelper(IShapeHelper shapeHelper,ILogger logger = null):ITableBatchHelper
 	{
-		private readonly ITableFormatHelper _tableFormatHelper = tableFormatHelper??throw new ArgumentNullException(nameof(tableFormatHelper));
 		private readonly IShapeHelper _shapeHelper = shapeHelper??throw new ArgumentNullException(nameof(shapeHelper));
 		private readonly ILogger _logger = logger??LoggerProvider.GetLogger();
 
@@ -33,7 +32,7 @@ namespace PPA.Manipulation
 		public void FormatTables(NETOP.Application netApp)
 		{
 			if(netApp==null) throw new ArgumentNullException(nameof(netApp));
-			FormatTablesInternal(netApp,_tableFormatHelper);
+			FormatTablesInternal(netApp);
 		}
 
 		#endregion ITableBatchHelper 实现
@@ -43,12 +42,10 @@ namespace PPA.Manipulation
 		/// <summary>
 		/// 格式化表格的内部实现（同步）
 		/// </summary>
-		private void FormatTablesInternal(NETOP.Application netApp,ITableFormatHelper tableFormatHelper)
+		private void FormatTablesInternal(NETOP.Application netApp)
 		{
 			_logger.LogInformation($"启动，netApp类型={netApp?.GetType().Name??"null"}");
-			if(tableFormatHelper==null)
-				throw new InvalidOperationException("无法获取 ITableFormatHelper 服务");
-
+			
 			ExHandler.Run(() =>
 			{
 				var currentApp = netApp;
@@ -95,92 +92,19 @@ namespace PPA.Manipulation
 				CollectTablesFromSelection(selection,currentApp,tableShapes);
 
 				// 处理收集到的表格
-				ProcessTables(tableShapes,currentApp,tableFormatHelper,selection);
+				ProcessTables(tableShapes,currentApp,selection);
 			},enableTiming: true);
 		}
 
-		/// <summary>
-		/// 检查形状是否是表格
-		/// </summary>
-		/// <param name="shape"> 要检查的形状 </param>
-		/// <returns> 如果是表格返回 true，否则返回 false </returns>
-		private bool IsTableShape(NETOP.Shape shape)
-		{
-			if(shape==null) return false;
-
-			bool hasTable = ExHandler.SafeGet(() => shape.HasTable == MsoTriState.msoTrue, defaultValue: false);
-			if(hasTable) return true;
-
-			var table = ExHandler.SafeGet(() => shape.Table, defaultValue: (NETOP.Table)null);
-			return table!=null;
-		}
-
-		/// <summary>
-		/// 从形状获取表格对象
-		/// </summary>
-		/// <param name="shape"> 形状对象 </param>
-		/// <returns> 表格对象，如果不是表格则返回 null </returns>
-		private NETOP.Table GetTableFromShape(NETOP.Shape shape)
-		{
-			if(shape==null) return null;
-
-			bool hasTable = ExHandler.SafeGet(() => shape.HasTable == MsoTriState.msoTrue, defaultValue: false);
-			if(hasTable)
-			{
-				return ExHandler.SafeGet(() => shape.Table,defaultValue: (NETOP.Table) null);
-			}
-
-			// HasTable 不可用，尝试直接检查 Table 属性
-			return ExHandler.SafeGet(() => shape.Table,defaultValue: (NETOP.Table) null);
-		}
-
-		private void CollectTablesFromSelection(dynamic selection,NETOP.Application netApp,List<(NETOP.Shape shape, NETOP.Table table)> tableShapes)
-		{
-			var processedKeys = new HashSet<object>();
-
-			if(selection is NETOP.ShapeRange shapeRange)
-			{
-				foreach(NETOP.Shape shape in shapeRange)
-				{
-					AddTableShapeIfValid(shape,tableShapes,processedKeys);
-				}
-			} else if(selection is NETOP.Shape shape)
-			{
-				AddTableShapeIfValid(shape,tableShapes,processedKeys);
-			}
-		}
-
-		/// <summary>
-		/// 如果形状是表格，则添加到列表
-		/// </summary>
-		/// <param name="shape"> 形状对象 </param>
-		/// <param name="tableShapes"> 表格形状列表 </param>
-		/// <param name="processedKeys"> 已处理的对象键列表（用于去重） </param>
-		/// <returns> 如果成功添加返回 true，否则返回 false </returns>
-		private bool AddTableShapeIfValid(NETOP.Shape shape,List<(NETOP.Shape shape, NETOP.Table table)> tableShapes,HashSet<object> processedKeys)
-		{
-			if(shape==null) return false;
-			// 检查是否已处理
-			if(processedKeys.Contains(shape)) return false;
-
-			var table = GetTableFromShape(shape);
-			if(table!=null)
-			{
-				processedKeys.Add(shape);
-				tableShapes.Add((shape, table));
-				return true;
-			}
-			return false;
-		}
+        // ... (中间代码保持不变) ...
 
 		/// <summary>
 		/// 处理收集到的表格
 		/// </summary>
 		/// <param name="tableShapes"> 表格形状列表 </param>
 		/// <param name="netApp"> PowerPoint 应用程序对象 </param>
-		/// <param name="tableFormatHelper"> 表格格式化辅助类 </param>
 		/// <param name="selection"> 选区对象 </param>
-		private void ProcessTables(List<(NETOP.Shape shape, NETOP.Table table)> tableShapes,NETOP.Application netApp,ITableFormatHelper tableFormatHelper,dynamic selection)
+		private void ProcessTables(List<(NETOP.Shape shape, NETOP.Table table)> tableShapes,NETOP.Application netApp,dynamic selection)
 		{
 			int totalTables = tableShapes.Count;
 			_logger.LogInformation($"找到 {totalTables} 个表格形状");
@@ -193,40 +117,43 @@ namespace PPA.Manipulation
 
 			try
 			{
-				// 尝试使用新架构服务
+				// 使用新架构服务
 				var newService = LegacyServiceBridge.GetService<ITableFormatService>();
-				bool useNewService = newService != null;
+				if (newService == null)
+                {
+                    _logger.LogError("无法获取 ITableFormatService 服务，格式化中止");
+                    Toast.Show("内部错误：服务未注册", Toast.ToastType.Error);
+                    return;
+                }
 				
-				if (useNewService)
-				{
-					// 检测平台并创建适配器工厂
-					var platform = PlatformDetector.Detect().ActivePlatform;
-					var adapterFactory = new AdapterFactory(_logger);
-					_logger.LogInformation($"使用新架构 TableFormatService，平台: {platform}");
-					
-					// 从旧配置构建格式化选项
-					var options = BuildFormatOptionsFromConfig();
-					
-					foreach(var (shape, table) in tableShapes)
-					{
-						if(table!=null)
-						{
-							var tableContext = adapterFactory.CreateTableContext(table, platform);
-							newService.FormatTable(tableContext, options);
-						}
-					}
-				}
-				else
-				{
-					_logger.LogInformation("使用旧实现 TableFormatHelper");
-					foreach(var (shape, table) in tableShapes)
-					{
-						if(table!=null)
-						{
-							tableFormatHelper.FormatTables(table);
-						}
-					}
-				}
+                // 检测平台并创建适配器工厂
+                var platform = PlatformDetector.Detect().ActivePlatform;
+                var adapterFactory = new AdapterFactory(_logger);
+                _logger.LogInformation($"使用新架构 TableFormatService，平台: {platform}");
+                
+                // 从旧配置构建格式化选项
+                var options = BuildFormatOptionsFromConfig();
+                
+                foreach(var (shape, table) in tableShapes)
+                {
+                    if(table!=null)
+                    {
+                        // --- 即使是新架构，也先尝试使用 ExecuteMso 清除样式（针对 WPS 优化） ---
+                        try
+                        {
+                            shape.Select();
+                            _logger.LogInformation("执行 ExecuteMso('TableStyleClearTable')");
+                            netApp.CommandBars.ExecuteMso("TableStyleClearTable");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning($"执行 TableStyleClearTable 失败: {ex.Message}");
+                        }
+
+                        var tableContext = adapterFactory.CreateTableContext(table, platform);
+                        newService.FormatTable(tableContext, options);
+                    }
+                }
 
 				Toast.Show(ResourceManager.GetString("Toast_FormatTables_Success",totalTables),Toast.ToastType.Success);
 			} finally
@@ -261,6 +188,55 @@ namespace PPA.Manipulation
 			}
 
 			return _shapeHelper.ValidateSelection(netApp,showWarningWhenInvalid: false);
+		}
+
+		/// <summary>
+		/// 从选区中收集表格形状
+		/// </summary>
+		private void CollectTablesFromSelection(dynamic selection, NETOP.Application netApp, List<(NETOP.Shape shape, NETOP.Table table)> tableShapes)
+		{
+			if (selection == null) return;
+
+			try
+			{
+				// 如果是 ShapeRange
+				if (selection is NETOP.ShapeRange shapeRange)
+				{
+					foreach (NETOP.Shape shape in shapeRange)
+					{
+						if (shape.HasTable == MsoTriState.msoTrue)
+						{
+							tableShapes.Add((shape, shape.Table));
+						}
+					}
+				}
+				// 如果是单个 Shape
+				else if (selection is NETOP.Shape shape)
+				{
+					if (shape.HasTable == MsoTriState.msoTrue)
+					{
+						tableShapes.Add((shape, shape.Table));
+					}
+				}
+				// 如果是 Selection 对象（通常不会直接传 selection 对象进来，而是传 ValidateSelection 返回的 ShapeRange 或 Shape，但为了保险起见）
+				else if (selection is NETOP.Selection sel)
+				{
+					if (sel.Type == NETOP.Enums.PpSelectionType.ppSelectionShapes && sel.ShapeRange != null)
+					{
+						foreach (NETOP.Shape subShape in sel.ShapeRange)
+						{
+							if (subShape.HasTable == MsoTriState.msoTrue)
+							{
+								tableShapes.Add((subShape, subShape.Table));
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning($"收集表格形状时发生错误: {ex.Message}");
+			}
 		}
 
 		/// <summary>

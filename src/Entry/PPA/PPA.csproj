@@ -267,7 +267,6 @@
     <Compile Include="Core\ResourceManager.cs" />
     <Compile Include="Core\DI\ServiceCollectionExtensions.cs" />
     <Compile Include="Core\Abstraction\Business\IFormattingConfig.cs" />
-    <Compile Include="Core\Abstraction\Business\ITableFormatHelper.cs" />
     <Compile Include="Core\Abstraction\Business\ITextFormatHelper.cs" />
     <Compile Include="Core\Abstraction\Business\IChartFormatHelper.cs" />
     <Compile Include="Core\Abstraction\Business\ITableBatchHelper.cs" />
@@ -300,7 +299,6 @@
     <Compile Include="Manipulation\ShapeBatchHelper.cs" />
     <Compile Include="Manipulation\ShapeSelectionFactory.cs" />
     <Compile Include="Manipulation\TableBatchHelper.cs" />
-    <Compile Include="Manipulation\TableFormatHelper.cs" />
     <Compile Include="Manipulation\TextBatchHelper.cs" />
     <Compile Include="Manipulation\TextFormatHelper.cs" />
     <Compile Include="Manipulation\UndoHelper.cs" />

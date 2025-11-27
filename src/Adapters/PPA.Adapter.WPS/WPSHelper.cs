@@ -130,14 +130,15 @@ namespace PPA.Adapter.WPS
         }
 
         /// <summary>
-        /// 边框类型常量
+        /// 边框类型常量（与 PpBorderType 保持一致）
+        /// ppBorderTop = 1, ppBorderLeft = 2, ppBorderBottom = 3, ppBorderRight = 4
         /// </summary>
         public static class BorderType
         {
-            public const int Left = 1;
-            public const int Top = 2;
-            public const int Right = 3;
-            public const int Bottom = 4;
+            public const int Top = 1;       // ppBorderTop
+            public const int Left = 2;      // ppBorderLeft
+            public const int Bottom = 3;    // ppBorderBottom
+            public const int Right = 4;     // ppBorderRight
             public const int DiagonalDown = 5;
             public const int DiagonalUp = 6;
         }

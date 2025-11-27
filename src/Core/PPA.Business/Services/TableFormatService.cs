@@ -92,6 +92,17 @@ namespace PPA.Business.Services
                 FormatDataRows = true,
                 ApplyBorders = true,
                 ApplyFont = true,
+                // WPS 不支持 ApplyStyle，背景清除由调用方处理
+                ApplyTableStyle = false,
+                Settings = new TableSettings
+                {
+                    FirstRow = true,
+                    FirstCol = false,
+                    LastRow = false,
+                    LastCol = false,
+                    HorizBanding = false,
+                    VertBanding = false
+                },
                 HeaderStyle = new RowStyle
                 {
                     HideBackground = true, // 隐藏背景，使用主题色
@@ -102,7 +113,9 @@ namespace PPA.Business.Services
                     ThemeColorIndex = 13, // 深色1 (dk1)
                     Alignment = TextAlignment.Center,
                     TopBorder = BorderStyle.SolidTheme(5, 1.75f),    // Accent1
-                    BottomBorder = BorderStyle.SolidTheme(5, 1.75f)  // Accent1
+                    BottomBorder = BorderStyle.SolidTheme(5, 1.75f), // Accent1
+                    LeftBorder = BorderStyle.None,   // 隐藏左边框
+                    RightBorder = BorderStyle.None   // 隐藏右边框
                 },
                 DataRowStyle = new RowStyle
                 {
@@ -112,7 +125,9 @@ namespace PPA.Business.Services
                     FontSize = 11,
                     Bold = false,
                     ThemeColorIndex = 13, // 深色1 (dk1)
-                    TopBorder = BorderStyle.SolidTheme(6, 1.0f)      // Accent2
+                    TopBorder = BorderStyle.SolidTheme(6, 1.0f),     // Accent2
+                    LeftBorder = BorderStyle.None,   // 隐藏左边框
+                    RightBorder = BorderStyle.None   // 隐藏右边框
                 }
             };
 

@@ -279,14 +279,9 @@ namespace PPA.UI
 				return batchHelper;
 			}
 
-			var tableHelper = serviceProvider.GetService<ITableFormatHelper>();
+			// 如果无法从 DI 获取 ITableBatchHelper，则手动创建实例
 			var shapeHelper = ResolveShapeHelper(serviceProvider);
-			if(tableHelper!=null)
-			{
-				return new TableBatchHelper(tableHelper,shapeHelper);
-			}
-
-			return null;
+			return new TableBatchHelper(shapeHelper);
 		}
 
 		private static IShapeHelper ResolveShapeHelper(IServiceProvider serviceProvider = null)
