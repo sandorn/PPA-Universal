@@ -102,9 +102,8 @@ namespace PPA.Manipulation
 		/// <code>
 		///UndoHelper.ExecuteInUndoGroup(app, "批量美化", () =&gt;
 		///{
-		///TableFormatHelper.FormatTables(table1);
-		///TableFormatHelper.FormatTables(table2);
-		///TableFormatHelper.FormatTables(table3);
+		///    tableService.FormatTable(table1, options);
+		///    tableService.FormatTable(table2, options);
 		///});
 		/// </code>
 		/// </example>

@@ -39,7 +39,6 @@ namespace PPA.Core.DI
 
 			// 注册格式化辅助服务（瞬态，每次请求创建新实例）
 			services.AddTransient<ISelectionService,SelectionService>();
-			// services.AddTransient<ITableFormatHelper,TableFormatHelper>(); // Removed
 			services.AddTransient<ITextFormatHelper,TextFormatHelper>();
 			services.AddTransient<IChartFormatHelper,ChartFormatHelper>();
 			services.AddTransient<IAlignHelper,AlignHelper>();
