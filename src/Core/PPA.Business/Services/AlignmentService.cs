@@ -13,11 +13,13 @@ namespace PPA.Business.Services
     {
         private readonly ILogger _logger;
         private readonly IShapeOperations _shapeOps;
+        private readonly IApplicationContext _context;
 
-        public AlignmentService(ILogger logger, IShapeOperations shapeOps)
+        public AlignmentService(ILogger logger, IShapeOperations shapeOps, IApplicationContext context)
         {
             _logger = logger ?? NullLogger.Instance;
             _shapeOps = shapeOps;
+            _context = context;
         }
 
         public void Align(IEnumerable<IShapeContext> shapes, AlignmentType alignment, AlignmentReference reference)
@@ -63,15 +65,25 @@ namespace PPA.Business.Services
 
         private float CalculateSlideReference(AlignmentType alignment, List<IShapeContext> shapes)
         {
+            // 获取幻灯片尺寸
+            float slideWidth = _context?.ActivePresentation?.SlideWidth ?? 960f;
+            float slideHeight = _context?.ActivePresentation?.SlideHeight ?? 540f;
+
             switch (alignment)
             {
                 case AlignmentType.Left:
-                    // 幻灯片坐标起点默认为 0
                     return 0f;
                 case AlignmentType.Top:
                     return 0f;
+                case AlignmentType.Right:
+                    return slideWidth;
+                case AlignmentType.Bottom:
+                    return slideHeight;
+                case AlignmentType.CenterHorizontal:
+                    return slideWidth / 2;
+                case AlignmentType.CenterVertical:
+                    return slideHeight / 2;
                 default:
-                    _logger.LogWarning($"Alignment '{alignment}' with slide reference is not fully supported, fallback to selection bounds.");
                     return CalculateSelectionReference(shapes, alignment);
             }
         }

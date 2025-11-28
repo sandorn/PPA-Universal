@@ -31,7 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\PPARibbon.xml" />
+    <EmbeddedResource Include="Resources\PPARibbon.xml">
+      <!-- 确保 XML 文件以 UTF-8 编码嵌入，避免 WPS 显示问号 -->
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

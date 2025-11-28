@@ -1,10 +1,12 @@
 using System;
+using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using PPA.Adapter.PowerPoint;
 using PPA.Adapter.WPS;
 using PPA.Business.DI;
 using PPA.Core.Abstraction;
 using PPA.Core.DI;
+using PPA.Core.Configuration;
 using PPA.Logging;
 using PPA.Universal.Platform;
 
@@ -113,8 +115,39 @@ namespace PPA.Universal
         {
             var services = new ServiceCollection();
 
-            // 注册核心服务
+            // 注册核心服务（会注册默认的 ConsoleLogger）
             services.AddPPACore();
+
+            // 计算日志和配置路径
+            var logFilePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "PPA.Universal",
+                "PPA.Universal.log");
+
+            var logDirectory = Path.GetDirectoryName(logFilePath) ?? AppDomain.CurrentDomain.BaseDirectory;
+            var configPath = Path.Combine(logDirectory, "PPAConfig.xml");
+
+            // 加载或创建配置文件
+            var ppaConfig = PPAConfig.LoadOrCreate(configPath);
+
+            // 注册配置对象
+            services.AddSingleton(ppaConfig);
+
+            // 根据配置决定是否启用文件日志及其参数
+            var logging = ppaConfig.Logging;
+            var enableFileLogging = logging == null || logging.EnableFileLogging;
+
+            if (enableFileLogging)
+            {
+                var minLevel = ParseLogLevel(logging?.MinimumLogLevel) ?? LogLevel.Information;
+                var maxLogFiles = (logging?.MaxLogFiles ?? 0) > 0 ? logging.MaxLogFiles : 14;
+                int? maxLogAgeDays = (logging?.MaxLogAgeDays ?? 0) > 0 ? logging.MaxLogAgeDays : (int?)null;
+                var rollingSizeMb = (logging?.RollingFileSizeMB ?? 0) > 0 ? logging.RollingFileSizeMB : 50;
+                var maxFileSizeBytes = (long)rollingSizeMb * 1024 * 1024;
+
+                // 注册文件日志服务（覆盖默认的 ConsoleLogger）
+                services.AddPPALogger(new FileLogger(logFilePath, minLevel, maxLogFiles, maxLogAgeDays, maxFileSizeBytes));
+            }
 
             // 注册业务服务
             services.AddPPABusiness();
@@ -132,6 +165,25 @@ namespace PPA.Universal
             // 获取日志服务
             _logger = _serviceProvider.GetService<ILogger>() ?? NullLogger.Instance;
             _logger.LogInformation($"DI 容器初始化成功，平台: {_platform}");
+        }
+
+        private static LogLevel? ParseLogLevel(string level)
+        {
+            if (string.IsNullOrWhiteSpace(level)) return null;
+
+            try
+            {
+                if (Enum.TryParse<LogLevel>(level, ignoreCase: true, out var result))
+                {
+                    return result;
+                }
+            }
+            catch
+            {
+                // 忽略解析失败，回退到默认级别
+            }
+
+            return null;
         }
 
         /// <summary>

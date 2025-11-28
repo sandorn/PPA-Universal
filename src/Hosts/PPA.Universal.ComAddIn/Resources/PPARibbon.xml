@@ -50,6 +50,13 @@
                   onAction="OnEqualSize" screentip="等大小" supertip="将选中的形状设置为相同大小"/>
         </group>
 
+        <!-- 表格组 -->
+        <group id="grpTable" label="表格">
+          <button id="btnTableThreeLine" label="三线表" 
+                  imageMso="TableDrawBordersGallery" size="large"
+                  onAction="OnFormatThreeLineTable" screentip="表格三线表" supertip="将选中的表格快速设置为三线表样式"/>
+        </group>
+
         <!-- 参考选项 -->
         <group id="grpOptions" label="参考">
           <dropDown id="ddAlignRef" label="对齐参考" 

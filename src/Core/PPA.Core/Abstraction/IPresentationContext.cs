@@ -14,6 +14,12 @@ namespace PPA.Core.Abstraction
         /// <summary>幻灯片数量</summary>
         int SlideCount { get; }
 
+        /// <summary>幻灯片宽度（磅）</summary>
+        float SlideWidth { get; }
+
+        /// <summary>幻灯片高度（磅）</summary>
+        float SlideHeight { get; }
+
         /// <summary>获取指定索引的幻灯片</summary>
         /// <param name="index">1-based 索引</param>
         ISlideContext GetSlide(int index);

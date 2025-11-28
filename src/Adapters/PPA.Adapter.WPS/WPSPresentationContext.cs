@@ -41,6 +41,24 @@ namespace PPA.Adapter.WPS
             }
         }
 
+        public float SlideWidth
+        {
+            get
+            {
+                try { return _presentation?.PageSetup?.SlideWidth ?? 960f; }
+                catch { return 960f; }
+            }
+        }
+
+        public float SlideHeight
+        {
+            get
+            {
+                try { return _presentation?.PageSetup?.SlideHeight ?? 540f; }
+                catch { return 540f; }
+            }
+        }
+
         public ISlideContext GetSlide(int index)
         {
             try

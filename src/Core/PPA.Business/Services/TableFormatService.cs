@@ -68,6 +68,12 @@ namespace PPA.Business.Services
                     }
                 }
 
+                // 再次强化表头下边框，避免部分平台被数据行顶部边框覆盖
+                if (options.FormatHeader && options.HeaderStyle != null && table.RowCount > 0)
+                {
+                    SetHeaderBottomBorder(table, options.HeaderStyle);
+                }
+
                 // 末行下边框（使用表头边框样式）
                 if (options.FormatHeader && options.HeaderStyle != null && table.RowCount > 1)
                 {
@@ -134,6 +140,19 @@ namespace PPA.Business.Services
             FormatTable(table, options);
         }
 
+        public void FormatTableAsThreeLine(ITableContext table)
+        {
+            if (table == null)
+            {
+                _logger.LogWarning("表格对象为空，无法应用三线表格式");
+                return;
+            }
+
+            var options = CreateThreeLineOptions();
+            _logger.LogInformation("开始应用三线表格式");
+            FormatTable(table, options);
+        }
+
         public void SetRowStyle(ITableContext table, int rowIndex, RowStyle style)
         {
             if (table == null || style == null || rowIndex < 1 || rowIndex > table.RowCount)
@@ -143,6 +162,10 @@ namespace PPA.Business.Services
             {
                 var cell = table.GetCell(rowIndex, col);
                 if (cell == null) continue;
+
+                // 清空现有边框，避免平台保留旧样式（尤其是 PowerPoint 竖线）
+                cell.SetBorder(BorderEdge.All, BorderStyle.None);
+                // TODO: PPT-THREELINE-01 PowerPoint 仍可能残留内置竖线，需要后续做平台特定清理
 
                 // 设置背景
                 if (style.HideBackground)
@@ -184,6 +207,22 @@ namespace PPA.Business.Services
                 {
                     cell.SetBorder(BorderEdge.Right, style.RightBorder.Value);
                 }
+            }
+        }
+
+        /// <summary>
+        /// 强化表头下边框
+        /// </summary>
+        private void SetHeaderBottomBorder(ITableContext table, RowStyle headerStyle)
+        {
+            if (table == null || table.RowCount == 0) return;
+            var borderStyle = headerStyle.BottomBorder ?? headerStyle.TopBorder;
+            if (!borderStyle.HasValue) return;
+
+            for (int col = 1; col <= table.ColumnCount; col++)
+            {
+                var cell = table.GetCell(1, col);
+                cell?.SetBorder(BorderEdge.Bottom, borderStyle.Value);
             }
         }
 
@@ -246,6 +285,54 @@ namespace PPA.Business.Services
             }
 
             _logger.LogInformation($"行高已均匀分布，每行高度: {avgHeight}");
+        }
+
+        private TableFormatOptions CreateThreeLineOptions()
+        {
+            var headerBorder = BorderStyle.SolidTheme(13, 1.75f);
+            return new TableFormatOptions
+            {
+                FormatHeader = true,
+                FormatDataRows = true,
+                ApplyBorders = true,
+                ApplyFont = true,
+                ApplyTableStyle = false,
+                Settings = new TableSettings
+                {
+                    FirstRow = true,
+                    FirstCol = false,
+                    LastRow = false,
+                    LastCol = false,
+                    HorizBanding = false,
+                    VertBanding = false
+                },
+                HeaderStyle = new RowStyle
+                {
+                    HideBackground = true,
+                    FontName = "等线",
+                    FontNameFarEast = "等线",
+                    FontSize = 12,
+                    Bold = true,
+                    Alignment = TextAlignment.Center,
+                    TopBorder = headerBorder,
+                    BottomBorder = headerBorder,
+                    LeftBorder = BorderStyle.None,
+                    RightBorder = BorderStyle.None
+                },
+                DataRowStyle = new RowStyle
+                {
+                    HideBackground = true,
+                    FontName = "等线",
+                    FontNameFarEast = "等线",
+                    FontSize = 11,
+                    Bold = false,
+                    Alignment = TextAlignment.Center,
+                    TopBorder = BorderStyle.None,
+                    BottomBorder = BorderStyle.None,
+                    LeftBorder = BorderStyle.None,
+                    RightBorder = BorderStyle.None
+                }
+            };
         }
     }
 }

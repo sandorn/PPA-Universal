@@ -20,6 +20,12 @@ namespace PPA.Business.Abstractions
         void FormatTableWithDefaults(ITableContext table);
 
         /// <summary>
+        /// 将表格格式化为标准三线表样式
+        /// </summary>
+        /// <param name="table">表格上下文</param>
+        void FormatTableAsThreeLine(ITableContext table);
+
+        /// <summary>
         /// 设置表格行样式
         /// </summary>
         /// <param name="table">表格上下文</param>

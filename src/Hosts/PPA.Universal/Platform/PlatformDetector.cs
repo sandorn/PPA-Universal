@@ -161,25 +161,64 @@ namespace PPA.Universal.Platform
 
             try
             {
-                // 尝试获取应用程序名称
                 dynamic dynApp = app;
-                string name = dynApp.Name;
+                
+                // 方法1: 检查 Path 属性 - WPS 路径通常包含 "Kingsoft" 或 "WPS"
+                try
+                {
+                    string path = dynApp.Path;
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        var pathLower = path.ToLowerInvariant();
+                        if (pathLower.Contains("kingsoft") || pathLower.Contains("wps"))
+                        {
+                            return PlatformType.WPS;
+                        }
+                        if (pathLower.Contains("microsoft") || pathLower.Contains("office"))
+                        {
+                            return PlatformType.PowerPoint;
+                        }
+                    }
+                }
+                catch { }
 
-                if (string.IsNullOrEmpty(name))
-                    return PlatformType.Unknown;
+                // 方法2: 检查应用程序名称
+                try
+                {
+                    string name = dynApp.Name;
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        // WPS 演示的 Name 可能是 "WPS 演示" 或 "演示"
+                        if (name.Contains("WPS") || name.Contains("Kingsoft") || 
+                            name.Contains("金山") || name == "演示")
+                        {
+                            return PlatformType.WPS;
+                        }
+                        if (name.Contains("PowerPoint") || name.Contains("Microsoft"))
+                        {
+                            return PlatformType.PowerPoint;
+                        }
+                    }
+                }
+                catch { }
 
-                if (name.Contains("PowerPoint") || name.Contains("Microsoft"))
-                    return PlatformType.PowerPoint;
-
-                if (name.Contains("WPS") || name.Contains("Kingsoft") || name.Contains("金山"))
+                // 方法3: 检查进程 - 如果 WPS 进程正在运行，且 PowerPoint 进程没有运行
+                if (IsWPSRunning() && !IsPowerPointRunning())
+                {
                     return PlatformType.WPS;
+                }
+                
+                if (IsPowerPointRunning() && !IsWPSRunning())
+                {
+                    return PlatformType.PowerPoint;
+                }
             }
             catch
             {
-                // 尝试通过类型判断
-                var typeName = app.GetType().FullName ?? string.Empty;
-
-                if (typeName.Contains("PowerPoint"))
+                // 最后尝试通过进程检测
+                if (IsWPSRunning())
+                    return PlatformType.WPS;
+                if (IsPowerPointRunning())
                     return PlatformType.PowerPoint;
             }
 

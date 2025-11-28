@@ -2,8 +2,11 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using Extensibility;
 using Microsoft.Office.Core;
+using PPA.Core.Abstraction;
+using PPA.Logging;
 using PPA.Universal.Integration;
 using Microsoft.Win32;
 
@@ -20,43 +23,38 @@ namespace PPA.Universal.ComAddIn
     public class PPAUniversalComAddIn : IDTExtensibility2, IRibbonExtensibility
     {
         private RibbonCallbacks _ribbonCallbacks;
+        
+        // PowerPoint 注册表路径
         private static readonly string[] PowerPointAddinKeys =
         {
             @"Software\Microsoft\Office\PowerPoint\Addins\PPA.Universal.ComAddIn"
         };
 
+        // WPS 演示 注册表路径
+        private static readonly string[] WPSAddinKeys =
+        {
+            @"Software\kingsoft\Office\WPP\Addins\PPA.Universal.ComAddIn"
+        };
+
+        // WPS 白名单路径
+        private const string WPSWhitelistKey = @"Software\kingsoft\Office\WPP\AddinsWL";
+        private const string WPSWhitelistValue = "PPA.Universal.ComAddIn";
+
+        // 需要清理的错误路径
+        private static readonly string[] ObsoleteKeys =
+        {
+            @"Software\kingsoft\Office\addins"
+        };
+
         private const string FriendlyName = "PPA Universal";
         private const string Description = "PPA Universal COM Add-in";
-        private static readonly string LogFilePath = System.IO.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "PPA.Universal",
-            "ComAddIn.log");
-        private const string FallbackLogPath = @"C:\PPAUniversalComAddIn.log";
 
         static PPAUniversalComAddIn()
         {
-            try
-            {
-                var traceLine = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Static ctor executed{Environment.NewLine}";
-                System.IO.File.AppendAllText(@"C:\PPAUniversalTrace.txt", traceLine);
-            }
-            catch
-            {
-                // 忽略静态构造日志失败
-            }
         }
 
         public PPAUniversalComAddIn()
         {
-            try
-            {
-                var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Instance ctor executed{Environment.NewLine}";
-                System.IO.File.AppendAllText(@"C:\PPAUniversalTrace.txt", line);
-            }
-            catch
-            {
-                // ignore
-            }
         }
 
         public void OnConnection(object application, ext_ConnectMode connectMode, object addInInst, ref Array custom)
@@ -64,12 +62,11 @@ namespace PPA.Universal.ComAddIn
             try
             {
                 UniversalIntegration.Initialize(application);
-                Log($"Initialize success. Platform={UniversalIntegration.Platform}");
+                UniversalIntegration.Logger?.LogInformation($"Initialize success. Platform={UniversalIntegration.Platform}");
             }
             catch (Exception ex)
             {
-                Log($"Initialize failed: {ex}");
-                WriteFallbackLog($"Initialize failed: {ex}");
+                UniversalIntegration.Logger?.LogError($"Initialize failed: {ex}", ex);
                 throw;
             }
         }
@@ -78,12 +75,12 @@ namespace PPA.Universal.ComAddIn
         {
             try
             {
-                Log("Disconnect invoked, cleaning up.");
+                UniversalIntegration.Logger?.LogInformation("Disconnect invoked, cleaning up.");
                 UniversalIntegration.Cleanup();
             }
             catch (Exception ex)
             {
-                Log($"Cleanup failed: {ex}");
+                UniversalIntegration.Logger?.LogError($"Cleanup failed: {ex}", ex);
             }
         }
 
@@ -108,7 +105,22 @@ namespace PPA.Universal.ComAddIn
         {
             try
             {
-                Log($"GetCustomUI called with ribbonId: {ribbonId}");
+                // 检测平台（如果 UniversalIntegration 已初始化）
+                PlatformType platform = PlatformType.Unknown;
+                try
+                {
+                    platform = UniversalIntegration.Platform;
+                }
+                catch
+                {
+                    // UniversalIntegration 可能还未初始化，尝试通过 ribbonId 判断
+                    if (ribbonId != null && (ribbonId.Contains("WPS") || ribbonId.Contains("Kingsoft")))
+                    {
+                        platform = PlatformType.WPS;
+                    }
+                }
+                
+                UniversalIntegration.Logger?.LogInformation($"GetCustomUI called with ribbonId: {ribbonId}, Platform: {platform}");
                 
                 // 从嵌入资源读取 Ribbon XML
                 var assembly = Assembly.GetExecutingAssembly();
@@ -118,24 +130,48 @@ namespace PPA.Universal.ComAddIn
                 {
                     if (stream == null)
                     {
-                        Log($"Ribbon resource not found: {resourceName}");
+                        UniversalIntegration.Logger?.LogWarning($"Ribbon resource not found: {resourceName}");
                         // 尝试列出所有资源名称用于调试
                         var names = assembly.GetManifestResourceNames();
-                        Log($"Available resources: {string.Join(", ", names)}");
+                        UniversalIntegration.Logger?.LogDebug($"Available resources: {string.Join(", ", names)}");
                         return null;
                     }
                     
-                    using (var reader = new StreamReader(stream))
+                    // 使用 UTF-8 编码读取，确保 WPS 和 PowerPoint 都能正确显示中文
+                    // WPS 对编码更敏感，必须明确指定 UTF-8
+                    using (var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
                     {
                         var xml = reader.ReadToEnd();
-                        Log($"Ribbon XML loaded, length: {xml.Length}");
+                        
+                        // WPS 不支持 PowerPoint 的 imageMso 图标，需要移除以避免显示问号
+                        if (platform == PlatformType.WPS)
+                        {
+                            UniversalIntegration.Logger?.LogInformation("WPS 平台检测到，移除 imageMso 属性以避免图标显示问题");
+                            // 使用正则表达式移除所有 imageMso 属性
+                            xml = System.Text.RegularExpressions.Regex.Replace(
+                                xml,
+                                @"\s+imageMso=""[^""]+""",
+                                "",
+                                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                        }
+                        
+                        // 验证 XML 内容是否包含中文字符（用于调试）
+                        if (xml.Contains("对齐") || xml.Contains("分布"))
+                        {
+                            UniversalIntegration.Logger?.LogInformation($"Ribbon XML loaded successfully, length: {xml.Length}, contains Chinese characters");
+                        }
+                        else
+                        {
+                            UniversalIntegration.Logger?.LogWarning($"Ribbon XML loaded but may have encoding issues, length: {xml.Length}");
+                        }
+                        
                         return xml;
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log($"GetCustomUI failed: {ex}");
+                UniversalIntegration.Logger?.LogError($"GetCustomUI failed: {ex}", ex);
                 return null;
             }
         }
@@ -151,7 +187,7 @@ namespace PPA.Universal.ComAddIn
         {
             _ribbonCallbacks = new RibbonCallbacks();
             _ribbonCallbacks.Ribbon_OnLoad(ribbon);
-            Log("Ribbon_OnLoad completed");
+            UniversalIntegration.Logger?.LogInformation("Ribbon_OnLoad completed");
         }
 
         // 对齐操作
@@ -171,6 +207,9 @@ namespace PPA.Universal.ComAddIn
         public void OnEqualHeight(IRibbonControl control) => _ribbonCallbacks?.OnEqualHeight(control);
         public void OnEqualSize(IRibbonControl control) => _ribbonCallbacks?.OnEqualSize(control);
 
+        // 表格操作
+        public void OnFormatThreeLineTable(IRibbonControl control) => _ribbonCallbacks?.OnFormatThreeLineTable(control);
+
         // 参考选项
         public void OnAlignRefChanged(IRibbonControl control, string selectedId, int selectedIndex)
             => _ribbonCallbacks?.OnAlignRefChanged(control, selectedId, selectedIndex);
@@ -183,18 +222,94 @@ namespace PPA.Universal.ComAddIn
         [ComRegisterFunction]
         public static void Register(Type type)
         {
+            // 清理错误的注册表项
+            CleanupObsoleteKeys();
+
+            // 注册 PowerPoint
             foreach (var path in PowerPointAddinKeys)
             {
                 RegisterOfficeAddinKey(Registry.CurrentUser, path);
             }
+
+            // 注册 WPS
+            foreach (var path in WPSAddinKeys)
+            {
+                RegisterOfficeAddinKey(Registry.CurrentUser, path);
+            }
+
+            // 注册 WPS 白名单
+            RegisterWPSWhitelist();
         }
 
         [ComUnregisterFunction]
         public static void Unregister(Type type)
         {
+            // 注销 PowerPoint
             foreach (var path in PowerPointAddinKeys)
             {
                 Registry.CurrentUser.DeleteSubKeyTree(path, false);
+            }
+
+            // 注销 WPS
+            foreach (var path in WPSAddinKeys)
+            {
+                Registry.CurrentUser.DeleteSubKeyTree(path, false);
+            }
+
+            // 移除 WPS 白名单
+            UnregisterWPSWhitelist();
+
+            // 清理错误的注册表项
+            CleanupObsoleteKeys();
+        }
+
+        /// <summary>
+        /// 注册 WPS 白名单
+        /// </summary>
+        private static void RegisterWPSWhitelist()
+        {
+            try
+            {
+                using var key = Registry.CurrentUser.CreateSubKey(WPSWhitelistKey);
+                key?.SetValue(WPSWhitelistValue, "", RegistryValueKind.String);
+            }
+            catch
+            {
+                // 忽略白名单注册失败
+            }
+        }
+
+        /// <summary>
+        /// 移除 WPS 白名单
+        /// </summary>
+        private static void UnregisterWPSWhitelist()
+        {
+            try
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(WPSWhitelistKey, writable: true);
+                key?.DeleteValue(WPSWhitelistValue, throwOnMissingValue: false);
+            }
+            catch
+            {
+                // 忽略白名单移除失败
+            }
+        }
+
+        /// <summary>
+        /// 清理错误创建的注册表项
+        /// </summary>
+        private static void CleanupObsoleteKeys()
+        {
+            foreach (var path in ObsoleteKeys)
+            {
+                try
+                {
+                    Registry.CurrentUser.DeleteSubKeyTree(path, throwOnMissingSubKey: false);
+                }
+                catch
+                {
+                    // 忽略清理失败
+                }
             }
         }
 
@@ -259,43 +374,6 @@ namespace PPA.Universal.ComAddIn
             }
         }
 
-        private static void Log(string message)
-        {
-            try
-            {
-                var directory = System.IO.Path.GetDirectoryName(LogFilePath);
-                if (!System.IO.Directory.Exists(directory))
-                {
-                    System.IO.Directory.CreateDirectory(directory);
-                }
-
-                var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}";
-                System.IO.File.AppendAllText(LogFilePath, line);
-            }
-            catch
-            {
-                // 忽略日志写入异常
-            }
-        }
-
-        private static void WriteFallbackLog(string message)
-        {
-            try
-            {
-                var directory = System.IO.Path.GetDirectoryName(FallbackLogPath);
-                if (!System.IO.Directory.Exists(directory))
-                {
-                    System.IO.Directory.CreateDirectory(directory);
-                }
-
-                var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}";
-                System.IO.File.AppendAllText(FallbackLogPath, line);
-            }
-            catch
-            {
-                // 忽略
-            }
-        }
 
     }
 }

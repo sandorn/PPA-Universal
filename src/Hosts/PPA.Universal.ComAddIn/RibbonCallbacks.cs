@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using PPA.Business.Abstractions;
 using PPA.Core.Abstraction;
+using PPA.Logging;
 using PPA.Universal.Integration;
 
 namespace PPA.Universal.ComAddIn
@@ -23,7 +24,7 @@ namespace PPA.Universal.ComAddIn
         public void Ribbon_OnLoad(object ribbon)
         {
             _ribbon = ribbon;
-            Log("Ribbon loaded successfully");
+            UniversalIntegration.Logger?.LogInformation("Ribbon loaded successfully");
         }
 
         #region 对齐操作
@@ -93,6 +94,49 @@ namespace PPA.Universal.ComAddIn
 
         #endregion
 
+        #region 表格格式化
+
+        public void OnFormatThreeLineTable(object control)
+        {
+            try
+            {
+                var shapes = GetSelectedShapes();
+                if (shapes == null || !shapes.Any())
+                {
+                    ShowMessage("请先选择包含表格的形状");
+                    return;
+                }
+
+                var tableShapes = shapes.Where(s => s?.IsTable == true && s.Table != null).ToList();
+                if (tableShapes.Count == 0)
+                {
+                    ShowMessage("选中形状中没有表格");
+                    return;
+                }
+
+                var formatService = UniversalIntegration.GetService<ITableFormatService>();
+                if (formatService == null)
+                {
+                    ShowMessage("表格格式化服务不可用");
+                    return;
+                }
+
+                foreach (var shape in tableShapes)
+                {
+                    formatService.FormatTableAsThreeLine(shape.Table);
+                }
+
+                UniversalIntegration.Logger?.LogInformation($"已对 {tableShapes.Count} 个表格应用三线表格式");
+            }
+            catch (Exception ex)
+            {
+                UniversalIntegration.Logger?.LogError($"三线表格式化失败: {ex.Message}", ex);
+                ShowMessage($"三线表格式化失败: {ex.Message}");
+            }
+        }
+
+        #endregion
+
         #region 参考选项
 
         public void OnAlignRefChanged(object control, string selectedId, int selectedIndex)
@@ -105,7 +149,7 @@ namespace PPA.Universal.ComAddIn
                 3 => AlignmentReference.LastObject,
                 _ => AlignmentReference.SelectedObjects
             };
-            Log($"Alignment reference changed to: {_currentReference}");
+            UniversalIntegration.Logger?.LogInformation($"Alignment reference changed to: {_currentReference}");
         }
 
         public int GetAlignRefIndex(object control)
@@ -143,11 +187,11 @@ namespace PPA.Universal.ComAddIn
                 }
 
                 service.Align(shapes, alignmentType, _currentReference);
-                Log($"Alignment executed: {alignmentType}, Reference: {_currentReference}");
+                UniversalIntegration.Logger?.LogInformation($"Alignment executed: {alignmentType}, Reference: {_currentReference}");
             }
             catch (Exception ex)
             {
-                Log($"Alignment failed: {ex.Message}");
+                UniversalIntegration.Logger?.LogError($"Alignment failed: {ex.Message}", ex);
                 ShowMessage($"对齐操作失败: {ex.Message}");
             }
         }
@@ -171,11 +215,11 @@ namespace PPA.Universal.ComAddIn
                 }
 
                 service.Distribute(shapes, distributionType);
-                Log($"Distribution executed: {distributionType}");
+                UniversalIntegration.Logger?.LogInformation($"Distribution executed: {distributionType}");
             }
             catch (Exception ex)
             {
-                Log($"Distribution failed: {ex.Message}");
+                UniversalIntegration.Logger?.LogError($"Distribution failed: {ex.Message}", ex);
                 ShowMessage($"分布操作失败: {ex.Message}");
             }
         }
@@ -199,11 +243,11 @@ namespace PPA.Universal.ComAddIn
                 }
 
                 operation(service);
-                Log("Size operation executed");
+                UniversalIntegration.Logger?.LogInformation("Size operation executed");
             }
             catch (Exception ex)
             {
-                Log($"Size operation failed: {ex.Message}");
+                UniversalIntegration.Logger?.LogError($"Size operation failed: {ex.Message}", ex);
                 ShowMessage($"尺寸操作失败: {ex.Message}");
             }
         }
@@ -214,8 +258,14 @@ namespace PPA.Universal.ComAddIn
             {
                 var context = UniversalIntegration.Context;
                 var selection = context?.Selection;
+                
+                if (selection == null)
+                {
+                    return null;
+                }
 
-                if (selection == null || selection.Type != SelectionType.Shapes)
+                // 检查是否有形状选择
+                if (selection.Type != SelectionType.Shapes && selection.ShapeCount == 0)
                 {
                     return null;
                 }
@@ -224,7 +274,7 @@ namespace PPA.Universal.ComAddIn
             }
             catch (Exception ex)
             {
-                Log($"GetSelectedShapes failed: {ex.Message}");
+                UniversalIntegration.Logger?.LogError($"GetSelectedShapes failed: {ex.Message}", ex);
                 return null;
             }
         }
@@ -236,30 +286,6 @@ namespace PPA.Universal.ComAddIn
                 "PPA Universal", 
                 System.Windows.Forms.MessageBoxButtons.OK, 
                 System.Windows.Forms.MessageBoxIcon.Information);
-        }
-
-        private void Log(string message)
-        {
-            try
-            {
-                var logPath = System.IO.Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "PPA.Universal",
-                    "Ribbon.log");
-
-                var directory = System.IO.Path.GetDirectoryName(logPath);
-                if (!System.IO.Directory.Exists(directory))
-                {
-                    System.IO.Directory.CreateDirectory(directory);
-                }
-
-                var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}";
-                System.IO.File.AppendAllText(logPath, line);
-            }
-            catch
-            {
-                // 忽略日志写入失败
-            }
         }
 
         #endregion
