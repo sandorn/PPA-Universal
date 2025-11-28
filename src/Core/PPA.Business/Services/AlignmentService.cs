@@ -47,6 +47,64 @@ namespace PPA.Business.Services
 
         private float CalculateReferenceValue(List<IShapeContext> shapes, AlignmentType alignment, AlignmentReference reference)
         {
+            switch (reference)
+            {
+                case AlignmentReference.Slide:
+                    return CalculateSlideReference(alignment, shapes);
+                case AlignmentReference.FirstObject:
+                    return CalculateSingleShapeReference(shapes.FirstOrDefault(), alignment);
+                case AlignmentReference.LastObject:
+                    return CalculateSingleShapeReference(shapes.LastOrDefault(), alignment);
+                case AlignmentReference.SelectedObjects:
+                default:
+                    return CalculateSelectionReference(shapes, alignment);
+            }
+        }
+
+        private float CalculateSlideReference(AlignmentType alignment, List<IShapeContext> shapes)
+        {
+            switch (alignment)
+            {
+                case AlignmentType.Left:
+                    // 幻灯片坐标起点默认为 0
+                    return 0f;
+                case AlignmentType.Top:
+                    return 0f;
+                default:
+                    _logger.LogWarning($"Alignment '{alignment}' with slide reference is not fully supported, fallback to selection bounds.");
+                    return CalculateSelectionReference(shapes, alignment);
+            }
+        }
+
+        private float CalculateSingleShapeReference(IShapeContext shape, AlignmentType alignment)
+        {
+            if (shape == null)
+            {
+                return 0f;
+            }
+
+            var bounds = shape.Bounds;
+            switch (alignment)
+            {
+                case AlignmentType.Left:
+                    return bounds.Left;
+                case AlignmentType.Right:
+                    return bounds.Right;
+                case AlignmentType.Top:
+                    return bounds.Top;
+                case AlignmentType.Bottom:
+                    return bounds.Bottom;
+                case AlignmentType.CenterHorizontal:
+                    return bounds.CenterX;
+                case AlignmentType.CenterVertical:
+                    return bounds.CenterY;
+                default:
+                    return 0f;
+            }
+        }
+
+        private float CalculateSelectionReference(List<IShapeContext> shapes, AlignmentType alignment)
+        {
             switch (alignment)
             {
                 case AlignmentType.Left:
@@ -66,7 +124,7 @@ namespace PPA.Business.Services
                     var maxY = shapes.Max(s => s.Bounds.Bottom);
                     return (minY + maxY) / 2;
                 default:
-                    return 0;
+                    return 0f;
             }
         }
 

@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using PPA.Business.Abstractions;
 using PPA.Core.Abstraction;
 using PPA.Logging;
 using PPA.Universal.Platform;
@@ -105,6 +107,37 @@ namespace PPA.Universal.Integration
                 _instance?.Dispose();
                 _instance = null;
             }
+        }
+
+        /// <summary>
+        /// 将当前选中的形状基于幻灯片左对齐
+        /// </summary>
+        public static void AlignSelectionLeftToSlide()
+        {
+            var context = Context;
+            var selection = context?.Selection;
+            if (selection == null || selection.Type != SelectionType.Shapes || selection.ShapeCount == 0)
+            {
+                Logger.LogWarning("未检测到可对齐的形状选择。");
+                return;
+            }
+
+            var alignmentService = GetService<IAlignmentService>();
+            if (alignmentService == null)
+            {
+                Logger.LogError("无法获取 IAlignmentService，无法执行对齐操作。");
+                return;
+            }
+
+            var shapes = selection.SelectedShapes?.ToList();
+            if (shapes == null || shapes.Count == 0)
+            {
+                Logger.LogWarning("选中形状集合为空，跳过对齐。");
+                return;
+            }
+
+            alignmentService.Align(shapes, AlignmentType.Left, AlignmentReference.Slide);
+            Logger.LogInformation("已将选中形状基于幻灯片左对齐。");
         }
     }
 }

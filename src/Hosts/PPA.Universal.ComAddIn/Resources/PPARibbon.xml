@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_OnLoad">
+  <ribbon>
+    <tabs>
+      <tab id="PPATab" label="PPA" insertAfterMso="TabHome">
+        
+        <!-- 对齐组 -->
+        <group id="grpAlign" label="对齐">
+          <button id="btnAlignLeft" label="左对齐" 
+                  imageMso="ObjectsAlignLeft" size="large"
+                  onAction="OnAlignLeft" screentip="左对齐" supertip="将选中的形状左对齐"/>
+          <button id="btnAlignCenter" label="水平居中" 
+                  imageMso="ObjectsAlignCenterHorizontal" size="large"
+                  onAction="OnAlignCenterH" screentip="水平居中" supertip="将选中的形状水平居中对齐"/>
+          <button id="btnAlignRight" label="右对齐" 
+                  imageMso="ObjectsAlignRight" size="large"
+                  onAction="OnAlignRight" screentip="右对齐" supertip="将选中的形状右对齐"/>
+          <separator id="sep1"/>
+          <button id="btnAlignTop" label="顶部对齐" 
+                  imageMso="ObjectsAlignTop" size="normal"
+                  onAction="OnAlignTop" screentip="顶部对齐" supertip="将选中的形状顶部对齐"/>
+          <button id="btnAlignMiddle" label="垂直居中" 
+                  imageMso="ObjectsAlignMiddleVertical" size="normal"
+                  onAction="OnAlignCenterV" screentip="垂直居中" supertip="将选中的形状垂直居中对齐"/>
+          <button id="btnAlignBottom" label="底部对齐" 
+                  imageMso="ObjectsAlignBottom" size="normal"
+                  onAction="OnAlignBottom" screentip="底部对齐" supertip="将选中的形状底部对齐"/>
+        </group>
+
+        <!-- 分布组 -->
+        <group id="grpDistribute" label="分布">
+          <button id="btnDistributeH" label="水平分布" 
+                  imageMso="ObjectsAlignDistributeHorizontally" size="large"
+                  onAction="OnDistributeH" screentip="水平分布" supertip="将选中的形状水平均匀分布"/>
+          <button id="btnDistributeV" label="垂直分布" 
+                  imageMso="ObjectsAlignDistributeVertically" size="large"
+                  onAction="OnDistributeV" screentip="垂直分布" supertip="将选中的形状垂直均匀分布"/>
+        </group>
+
+        <!-- 尺寸组 -->
+        <group id="grpSize" label="尺寸">
+          <button id="btnEqualWidth" label="等宽" 
+                  imageMso="ShapeSameWidth" size="normal"
+                  onAction="OnEqualWidth" screentip="等宽" supertip="将选中的形状设置为相同宽度"/>
+          <button id="btnEqualHeight" label="等高" 
+                  imageMso="ShapeSameHeight" size="normal"
+                  onAction="OnEqualHeight" screentip="等高" supertip="将选中的形状设置为相同高度"/>
+          <button id="btnEqualSize" label="等大小" 
+                  imageMso="ShapeSameSize" size="normal"
+                  onAction="OnEqualSize" screentip="等大小" supertip="将选中的形状设置为相同大小"/>
+        </group>
+
+        <!-- 参考选项 -->
+        <group id="grpOptions" label="参考">
+          <dropDown id="ddAlignRef" label="对齐参考" 
+                    onAction="OnAlignRefChanged" getSelectedItemIndex="GetAlignRefIndex">
+            <item id="refSelection" label="选中对象"/>
+            <item id="refSlide" label="幻灯片"/>
+            <item id="refFirst" label="第一个对象"/>
+            <item id="refLast" label="最后一个对象"/>
+          </dropDown>
+        </group>
+
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>

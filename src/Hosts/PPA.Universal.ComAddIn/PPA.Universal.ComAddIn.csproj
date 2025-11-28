@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>PPA.Universal.ComAddIn</AssemblyName>
+    <RootNamespace>PPA.Universal.ComAddIn</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <ComVisible>true</ComVisible>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <Description>COM Add-in host for PPA.Universal</Description>
+    <OutputType>Library</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PPA.Universal\PPA.Universal.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Extensibility">
+      <HintPath>$(WINDIR)\assembly\GAC\Extensibility\7.0.3300.0__b03f5f7f11d50a3a\Extensibility.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="office">
+      <HintPath>$(WINDIR)\assembly\GAC_MSIL\office\15.0.0.0__71e9bce111e9429c\office.dll</HintPath>
+      <Private>false</Private>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\PPARibbon.xml" />
+  </ItemGroup>
+
+</Project>
+
