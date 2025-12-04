@@ -14,11 +14,14 @@ namespace PPA.Business.DI
         /// </summary>
         public static IServiceCollection AddPPABusiness(this IServiceCollection services)
         {
-            // 格式化服务
+            // 格式化服务（依赖 ILogger、ITableOperations、PPAConfig，由容器注入）
             services.AddTransient<ITableFormatService, TableFormatService>();
 
             // 对齐服务
             services.AddTransient<IAlignmentService, AlignmentService>();
+
+            // 毛玻璃卡片服务
+            services.AddTransient<IGlassCardService, GlassCardService>();
 
             // 批量操作服务
             // 注：这些服务的具体实现需要依赖平台适配器

@@ -1,3 +1,4 @@
+using NetOffice;
 using PPA.Core.Abstraction;
 
 namespace PPA.Adapter.WPS
@@ -46,42 +47,6 @@ namespace PPA.Adapter.WPS
                     }
                 }
                 catch { }
-            }
-        }
-
-        public bool IsMerged
-        {
-            get
-            {
-                // WPS 可能不直接提供 IsMerged 属性
-                // 暂时返回 false
-                return false;
-            }
-        }
-
-        public void SetBackground(int colorRgb)
-        {
-            try
-            {
-                dynamic fill = _cell?.Shape?.Fill;
-                if (fill == null) return;
-
-                fill.Visible = WPSHelper.TriState.True;
-                fill.Solid();
-                fill.ForeColor.RGB = colorRgb;
-            }
-            catch { }
-        }
-
-        public int GetBackground()
-        {
-            try
-            {
-                return _cell?.Shape?.Fill?.ForeColor?.RGB ?? 0;
-            }
-            catch
-            {
-                return 0;
             }
         }
 
@@ -167,17 +132,29 @@ namespace PPA.Adapter.WPS
             }
         }
 
-        public void SetBackgroundVisible(bool visible)
-        {
-            try
-            {
-                dynamic fill = _cell?.Shape?.Fill;
-                if (fill == null) return;
+        public void SetBackgroundVisible(bool visible)  
+        {  
+            try  
+            {  
+                var fill = _cell?.Shape?.Fill;  
+                if (fill == null) return;  
+                
+                if (visible)  
+                {  
+                    fill.Visible = WPSHelper.TriState.False;  
+                    fill.Transparency = 0.0f;   
+                }  
+                else  
+                {  
+                    fill.Visible = WPSHelper.TriState.True;  
+                    fill.Solid(); 
+                    fill.ForeColor.RGB = 16777215; 
+                    fill.Transparency = 0.99f; 
+                }  
+            }  
+            catch { }  
+        }  
 
-                fill.Visible = visible ? WPSHelper.TriState.True : WPSHelper.TriState.False;
-            }
-            catch { }
-        }
 
         public void SetFont(FontStyle style)
         {

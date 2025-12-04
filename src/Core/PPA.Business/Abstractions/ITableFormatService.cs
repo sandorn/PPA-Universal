@@ -15,11 +15,6 @@ namespace PPA.Business.Abstractions
         void FormatTable(ITableContext table, TableFormatOptions options = null);
 
         /// <summary>
-        /// 格式化表格（使用默认配置）
-        /// </summary>
-        void FormatTableWithDefaults(ITableContext table);
-
-        /// <summary>
         /// 将表格格式化为标准三线表样式
         /// </summary>
         /// <param name="table">表格上下文</param>
@@ -87,6 +82,9 @@ namespace PPA.Business.Abstractions
 
         /// <summary>负数文本颜色（RGB）</summary>
         public int NegativeTextColor { get; set; } = 255; // 红色
+
+        /// <summary>末行下边框样式（如未指定则回退到表头样式）</summary>
+        public BorderStyle? FinalRowBottomBorder { get; set; }
     }
 
     /// <summary>

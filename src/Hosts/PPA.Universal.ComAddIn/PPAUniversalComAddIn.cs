@@ -210,6 +210,9 @@ namespace PPA.Universal.ComAddIn
         // 表格操作
         public void OnFormatThreeLineTable(IRibbonControl control) => _ribbonCallbacks?.OnFormatThreeLineTable(control);
 
+        // 毛玻璃卡片
+        public void OnCreateGlassCard(IRibbonControl control) => _ribbonCallbacks?.OnCreateGlassCard(control);
+
         // 参考选项
         public void OnAlignRefChanged(IRibbonControl control, string selectedId, int selectedIndex)
             => _ribbonCallbacks?.OnAlignRefChanged(control, selectedId, selectedIndex);

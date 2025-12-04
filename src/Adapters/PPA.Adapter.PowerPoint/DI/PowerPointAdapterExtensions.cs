@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using PPA.Business.Abstractions;
 using PPA.Core.Abstraction;
 using NETOP = NetOffice.PowerPointApi;
+using PPA.Adapter.PowerPoint;
 
 namespace PPA.Adapter.PowerPoint.DI
 {
@@ -18,6 +20,12 @@ namespace PPA.Adapter.PowerPoint.DI
             services.AddSingleton<IShapeOperations, PowerPointShapeOps>();
             services.AddSingleton<ITableOperations, PowerPointTableOps>();
             services.AddSingleton<ISlideOperations, PowerPointSlideOps>();
+
+            // 注册毛玻璃卡片渲染器
+            services.AddSingleton<IGlassCardRenderer, PowerPointGlassCardRenderer>();
+
+            // 注册 PowerPoint 平台的 idMso 命令执行器
+            services.AddSingleton<IIdMsoCommandExecutor, PowerPointIdMsoCommandExecutor>();
 
             // 注意：IApplicationContext 需要在运行时由 Host 项目注册
             // 因为它依赖于 NETOP.Application 实例

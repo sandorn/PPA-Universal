@@ -14,18 +14,8 @@ namespace PPA.Core.Abstraction
         /// <summary>单元格文本</summary>
         string Text { get; set; }
 
-        /// <summary>是否合并单元格</summary>
-        bool IsMerged { get; }
-
-        /// <summary>设置背景色</summary>
-        /// <param name="colorRgb">RGB 颜色值</param>
-        void SetBackground(int colorRgb);
-
         /// <summary>设置背景可见性</summary>
         void SetBackgroundVisible(bool visible);
-
-        /// <summary>获取背景色</summary>
-        int GetBackground();
 
         /// <summary>设置边框样式</summary>
         /// <param name="edge">边框边缘</param>

@@ -99,7 +99,6 @@ namespace PPA.Adapter.WPS
             try
             {
                 if (string.IsNullOrEmpty(styleId) || _table == null) return;
-                _table.ApplyStyle(styleId, false);
             }
             catch { }
         }

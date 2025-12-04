@@ -9,6 +9,7 @@ using PPA.Core.DI;
 using PPA.Core.Configuration;
 using PPA.Logging;
 using PPA.Universal.Platform;
+using System.Xml.Linq;
 
 namespace PPA.Universal
 {
@@ -127,7 +128,7 @@ namespace PPA.Universal
             var logDirectory = Path.GetDirectoryName(logFilePath) ?? AppDomain.CurrentDomain.BaseDirectory;
             var configPath = Path.Combine(logDirectory, "PPAConfig.xml");
 
-            // 加载或创建配置文件
+            // 加载或创建配置文件（所有 XML 解析逻辑集中在 PPAConfig 内部）
             var ppaConfig = PPAConfig.LoadOrCreate(configPath);
 
             // 注册配置对象
@@ -164,6 +165,17 @@ namespace PPA.Universal
 
             // 获取日志服务
             _logger = _serviceProvider.GetService<ILogger>() ?? NullLogger.Instance;
+
+            // 诊断配置路径，避免过多的详细调试日志
+            try
+            {
+                _logger.LogInformation($"配置文件路径: {configPath}");
+            }
+            catch
+            {
+                // 诊断日志失败时忽略，避免影响主流程
+            }
+
             _logger.LogInformation($"DI 容器初始化成功，平台: {_platform}");
         }
 

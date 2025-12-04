@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using PPA.Business.Abstractions;
 using PPA.Core.Abstraction;
+using PPA.Adapter.WPS;
 
 namespace PPA.Adapter.WPS.DI
 {
@@ -17,6 +19,12 @@ namespace PPA.Adapter.WPS.DI
             services.AddSingleton<IShapeOperations, WPSShapeOps>();
             services.AddSingleton<ITableOperations, WPSTableOps>();
             services.AddSingleton<ISlideOperations, WPSSlideOps>();
+
+            // 注册毛玻璃卡片渲染器
+            services.AddSingleton<IGlassCardRenderer, WPSGlassCardRenderer>();
+
+            // 注册 WPS 平台的 idMso 命令执行器
+            services.AddSingleton<IIdMsoCommandExecutor, WpsIdMsoCommandExecutor>();
 
             // 注意：IApplicationContext 需要在运行时由 Host 项目注册
             // 因为它依赖于 WPS Application 实例

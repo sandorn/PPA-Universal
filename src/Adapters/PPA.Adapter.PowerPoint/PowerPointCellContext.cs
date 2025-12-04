@@ -67,20 +67,6 @@ namespace PPA.Adapter.PowerPoint
             }
         }
 
-        public void SetBackground(int colorRgb)
-        {
-            try
-            {
-                var fill = _cell?.Shape?.Fill;
-                if (fill == null) return;
-
-                fill.Visible = NetOffice.OfficeApi.Enums.MsoTriState.msoTrue;
-                fill.Solid();
-                fill.ForeColor.RGB = colorRgb;
-            }
-            catch { }
-        }
-
         public void SetBackgroundVisible(bool visible)
         {
             try
@@ -93,18 +79,6 @@ namespace PPA.Adapter.PowerPoint
                     : NetOffice.OfficeApi.Enums.MsoTriState.msoFalse;
             }
             catch { }
-        }
-
-        public int GetBackground()
-        {
-            try
-            {
-                return _cell?.Shape?.Fill?.ForeColor?.RGB ?? 0;
-            }
-            catch
-            {
-                return 0;
-            }
         }
 
         public void SetBorder(BorderEdge edge, BorderStyle style)

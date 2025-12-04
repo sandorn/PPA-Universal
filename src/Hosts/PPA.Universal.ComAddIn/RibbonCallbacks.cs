@@ -121,6 +121,19 @@ namespace PPA.Universal.ComAddIn
                     return;
                 }
 
+                // 在应用三线表格式前，统一尝试通过 idMso 清除原有表格格式
+                try
+                {
+                    var context = UniversalIntegration.Context;
+                    var idMsoExecutor = UniversalIntegration.GetService<IIdMsoCommandExecutor>();
+
+                    idMsoExecutor?.TryExecute(context, "ClearMenu");
+                }
+                catch
+                {
+                    // 清除格式失败时忽略，继续后续三线表格式化
+                }
+
                 foreach (var shape in tableShapes)
                 {
                     formatService.FormatTableAsThreeLine(shape.Table);
@@ -132,6 +145,40 @@ namespace PPA.Universal.ComAddIn
             {
                 UniversalIntegration.Logger?.LogError($"三线表格式化失败: {ex.Message}", ex);
                 ShowMessage($"三线表格式化失败: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region 毛玻璃卡片
+
+        public void OnCreateGlassCard(object control)
+        {
+            try
+            {
+                var context = UniversalIntegration.Context;
+                if (context == null)
+                {
+                    ShowMessage("应用上下文不可用，请重启加载项后重试");
+                    return;
+                }
+
+                var service = UniversalIntegration.GetService<IGlassCardService>();
+                if (service == null)
+                {
+                    ShowMessage("毛玻璃卡片服务不可用");
+                    return;
+                }
+
+                // 业务层会自动从全局 PPAConfig 中读取 GlassCard 配置，这里传 null 即可
+                service.CreateGlassCard(context, null);
+
+                UniversalIntegration.Logger?.LogInformation("GlassCard creation requested from Ribbon");
+            }
+            catch (Exception ex)
+            {
+                UniversalIntegration.Logger?.LogError($"CreateGlassCard failed: {ex.Message}", ex);
+                ShowMessage($"创建毛玻璃卡片失败: {ex.Message}");
             }
         }
 
