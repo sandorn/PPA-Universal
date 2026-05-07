@@ -9,6 +9,7 @@ using PPA.Core.Abstraction;
 using PPA.Logging;
 using PPA.Universal.Integration;
 using Microsoft.Win32;
+using stdole;
 
 namespace PPA.Universal.ComAddIn
 {
@@ -190,6 +191,14 @@ namespace PPA.Universal.ComAddIn
             UniversalIntegration.Logger?.LogInformation("Ribbon_OnLoad completed");
         }
 
+        private RibbonCallbacks EnsureCallbacks()
+        {
+            return _ribbonCallbacks ??= new RibbonCallbacks();
+        }
+
+        // RibbonX loadImage
+        public IPictureDisp LoadImage(string imageId) => EnsureCallbacks().LoadImage(imageId);
+
         // 对齐操作
         public void OnAlignLeft(IRibbonControl control) => _ribbonCallbacks?.OnAlignLeft(control);
         public void OnAlignRight(IRibbonControl control) => _ribbonCallbacks?.OnAlignRight(control);
@@ -207,11 +216,38 @@ namespace PPA.Universal.ComAddIn
         public void OnEqualHeight(IRibbonControl control) => _ribbonCallbacks?.OnEqualHeight(control);
         public void OnEqualSize(IRibbonControl control) => _ribbonCallbacks?.OnEqualSize(control);
 
+        // 交换大小和位置
+        public void OnSwapPositionsAndSize(IRibbonControl control) => EnsureCallbacks().OnSwapPositionsAndSize(control);
+
+        // 形状复制
+        public void OnMatrixCopy(IRibbonControl control) => EnsureCallbacks().OnMatrixCopy(control);
+        public void OnLinearCopy(IRibbonControl control) => EnsureCallbacks().OnLinearCopy(control);
+
+        // 吸附
+        public void OnSnapLeft(IRibbonControl control) => EnsureCallbacks().OnSnapLeft(control);
+        public void OnSnapRight(IRibbonControl control) => EnsureCallbacks().OnSnapRight(control);
+        public void OnSnapTop(IRibbonControl control) => EnsureCallbacks().OnSnapTop(control);
+        public void OnSnapBottom(IRibbonControl control) => EnsureCallbacks().OnSnapBottom(control);
+
+        // 延伸对齐
+        public void OnExtendLeft(IRibbonControl control) => EnsureCallbacks().OnExtendLeft(control);
+        public void OnExtendRight(IRibbonControl control) => EnsureCallbacks().OnExtendRight(control);
+        public void OnExtendTop(IRibbonControl control) => EnsureCallbacks().OnExtendTop(control);
+        public void OnExtendBottom(IRibbonControl control) => EnsureCallbacks().OnExtendBottom(control);
+
         // 表格操作
         public void OnFormatThreeLineTable(IRibbonControl control) => _ribbonCallbacks?.OnFormatThreeLineTable(control);
+        public void OnFormatTableFont(IRibbonControl control) => EnsureCallbacks().OnFormatTableFont(control);
+        public void OnFormatTextBoxFont(IRibbonControl control) => EnsureCallbacks().OnFormatTextBoxFont(control);
+        public void OnFormatChartFont(IRibbonControl control) => EnsureCallbacks().OnFormatChartFont(control);
 
         // 毛玻璃卡片
         public void OnCreateGlassCard(IRibbonControl control) => _ribbonCallbacks?.OnCreateGlassCard(control);
+
+        // 隐藏/显示、裁除、创建矩形
+        public void OnHideOrShowShapes(IRibbonControl control) => EnsureCallbacks().OnHideOrShowShapes(control);
+        public void OnCropEdges(IRibbonControl control) => EnsureCallbacks().OnCropEdges(control);
+        public void OnCreateRectangle(IRibbonControl control) => EnsureCallbacks().OnCreateRectangle(control);
 
         // 参考选项
         public void OnAlignRefChanged(IRibbonControl control, string selectedId, int selectedIndex)
@@ -219,6 +255,9 @@ namespace PPA.Universal.ComAddIn
 
         public int GetAlignRefIndex(IRibbonControl control)
             => _ribbonCallbacks?.GetAlignRefIndex(control) ?? 0;
+
+        // 调试
+        public void OnDebug(IRibbonControl control) => _ribbonCallbacks?.OnDebug(control);
 
         #endregion
 

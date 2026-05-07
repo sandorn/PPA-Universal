@@ -1,6 +1,7 @@
-# 编译输出
-/bin/
-/obj/
+# 编译输出（任意目录下的 bin/obj，避免仅根目录规则导致 src/**/obj 被误提交）
+bin/
+obj/
+# 根目录下若存在传统输出目录
 /Release/
 /Debug/
 

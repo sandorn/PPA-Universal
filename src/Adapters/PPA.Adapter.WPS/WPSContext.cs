@@ -81,9 +81,6 @@ namespace PPA.Adapter.WPS
                 case Feature.TextAdvanced:
                     return true; // 基本支持，但可能有差异
 
-                case Feature.Shortcuts:
-                    return false; // WPS 快捷键系统不同
-
                 default:
                     return false;
             }

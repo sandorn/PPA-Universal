@@ -37,6 +37,13 @@ namespace PPA.Business.Abstractions
         /// 设置表格行高均匀分布
         /// </summary>
         void DistributeRowHeights(ITableContext table);
+
+        /// <summary>
+        /// 格式化表格字体
+        /// </summary>
+        /// <param name="table">表格上下文</param>
+        /// <param name="fontStyle">字体样式</param>
+        void FormatTableFont(ITableContext table, FontStyle fontStyle = null);
     }
 
     /// <summary>

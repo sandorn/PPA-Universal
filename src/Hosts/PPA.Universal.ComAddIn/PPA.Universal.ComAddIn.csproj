@@ -35,6 +35,12 @@
       <!-- 确保 XML 文件以 UTF-8 编码嵌入，避免 WPS 显示问号 -->
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\*.png">
+      <LogicalName>PPA.Universal.ComAddIn.Resources.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\..\ico\*.png">
+      <LogicalName>PPA.Universal.ComAddIn.Resources.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

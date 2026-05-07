@@ -1,8 +1,8 @@
 # Application 变量命名规范
 
-## 📋 规范概述
+## 规范概述
 
-本文档定义了 PPA 项目中 Application 相关变量的统一命名规范，确保代码一致性和可读性。
+适用于本仓库 **PPA-Universal**（`PPA.Core` / Adapters / Hosts）中的 Application 抽象与 NetOffice/COM 宿主变量命名，便于跨文件阅读与代码评审。
 
 ---
 

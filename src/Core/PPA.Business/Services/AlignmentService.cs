@@ -294,5 +294,120 @@ namespace PPA.Business.Services
 
             _logger.LogInformation("已交换两个形状的位置");
         }
+
+        public void SnapToShape(IEnumerable<IShapeContext> shapes, SnapDirection snapDirection)
+        {
+            var shapeList = shapes?.ToList();
+            if (shapeList == null || shapeList.Count < 2)
+            {
+                _logger.LogWarning("吸附操作至少需要2个形状");
+                return;
+            }
+
+            var referenceShape = shapeList.First();
+            var otherShapes = shapeList.Skip(1).ToList();
+
+            _logger.LogInformation($"执行吸附: {snapDirection}, 基准形状: 1, 其他形状数: {otherShapes.Count}");
+
+            var refBounds = referenceShape.Bounds;
+
+            // 以第一个形状为基准，其余形状整体贴靠在基准一侧（与基准对边共线）：
+            // 左：他形左 = 基准左 − (他形右 − 他形左)，他形整体在基准左侧，他形右 = 基准左
+            // 右：他形左 = 基准右，他形整体在基准右侧
+            // 上：他形上 = 基准上 − (他形下 − 他形上)，他形整体在基准上方，他形下 = 基准上
+            // 下：他形上 = 基准下，他形整体在基准下方
+            foreach (var shape in otherShapes)
+            {
+                var b = shape.Bounds;
+                var dx = b.Right - b.Left;
+                var dy = b.Bottom - b.Top;
+
+                ShapeRect newBounds = snapDirection switch
+                {
+                    SnapDirection.Left => new ShapeRect(refBounds.Left - dx, b.Top, dx, dy),
+                    SnapDirection.Right => new ShapeRect(refBounds.Right, b.Top, dx, dy),
+                    SnapDirection.Top => new ShapeRect(b.Left, refBounds.Top - dy, dx, dy),
+                    SnapDirection.Bottom => new ShapeRect(b.Left, refBounds.Bottom, dx, dy),
+                    _ => b
+                };
+
+                shape.Bounds = newBounds;
+            }
+
+            _logger.LogInformation("吸附完成");
+        }
+
+        public void ExtendAlignment(IEnumerable<IShapeContext> shapes, ExtendDirection extendDirection)
+        {
+            var shapeList = shapes?.ToList();
+            if (shapeList == null || shapeList.Count < 2)
+            {
+                _logger.LogWarning("延伸对齐操作至少需要2个形状");
+                return;
+            }
+
+            _logger.LogInformation($"执行延伸对齐: {extendDirection}, 形状数: {shapeList.Count}");
+
+            float targetValue = 0f;
+
+            switch (extendDirection)
+            {
+                case ExtendDirection.Left:
+                    targetValue = shapeList.Min(s => s.Bounds.Left);
+                    break;
+                case ExtendDirection.Right:
+                    targetValue = shapeList.Max(s => s.Bounds.Right);
+                    break;
+                case ExtendDirection.Top:
+                    targetValue = shapeList.Min(s => s.Bounds.Top);
+                    break;
+                case ExtendDirection.Bottom:
+                    targetValue = shapeList.Max(s => s.Bounds.Bottom);
+                    break;
+            }
+
+            foreach (var shape in shapeList)
+            {
+                var bounds = shape.Bounds;
+                ShapeRect newBounds;
+
+                switch (extendDirection)
+                {
+                    case ExtendDirection.Left:
+                        newBounds = new ShapeRect(targetValue, bounds.Top, bounds.Right - targetValue, bounds.Height);
+                        break;
+                    case ExtendDirection.Right:
+                        newBounds = new ShapeRect(bounds.Left, bounds.Top, targetValue - bounds.Left, bounds.Height);
+                        break;
+                    case ExtendDirection.Top:
+                        newBounds = new ShapeRect(bounds.Left, targetValue, bounds.Width, bounds.Bottom - targetValue);
+                        break;
+                    case ExtendDirection.Bottom:
+                        newBounds = new ShapeRect(bounds.Left, bounds.Top, bounds.Width, targetValue - bounds.Top);
+                        break;
+                    default:
+                        newBounds = bounds;
+                        break;
+                }
+
+                shape.Bounds = newBounds;
+            }
+
+            _logger.LogInformation("延伸对齐完成");
+        }
+
+        public void SwapPositionsAndSize(IShapeContext shape1, IShapeContext shape2)
+        {
+            if (shape1 == null || shape2 == null) return;
+
+            var bounds1 = shape1.Bounds;
+            var bounds2 = shape2.Bounds;
+
+            // 交换位置和大小
+            shape1.Bounds = new ShapeRect(bounds2.Left, bounds2.Top, bounds2.Width, bounds2.Height);
+            shape2.Bounds = new ShapeRect(bounds1.Left, bounds1.Top, bounds1.Width, bounds1.Height);
+
+            _logger.LogInformation("已交换两个形状的位置和大小");
+        }
     }
 }

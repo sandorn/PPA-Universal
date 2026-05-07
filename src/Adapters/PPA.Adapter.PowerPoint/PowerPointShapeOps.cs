@@ -134,5 +134,61 @@ namespace PPA.Adapter.PowerPoint
             }
             catch { }
         }
+
+        public bool GetVisible(object shape)
+        {
+            var netShape = shape as NETOP.Shape;
+            if (netShape == null) return true;
+
+            try
+            {
+                return netShape.Visible == NetOffice.OfficeApi.Enums.MsoTriState.msoTrue;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        public void SetVisible(object shape, bool visible)
+        {
+            var netShape = shape as NETOP.Shape;
+            if (netShape == null) return;
+
+            try
+            {
+                netShape.Visible = visible 
+                    ? NetOffice.OfficeApi.Enums.MsoTriState.msoTrue 
+                    : NetOffice.OfficeApi.Enums.MsoTriState.msoFalse;
+            }
+            catch { }
+        }
+
+        public object CreateRectangle(ISlideContext slide, ShapeRect bounds)
+        {
+            if (slide?.NativeSlide == null) return null;
+
+            try
+            {
+                var netSlide = slide.NativeSlide as NETOP.Slide;
+                if (netSlide?.Shapes == null) return null;
+
+                var shape = netSlide.Shapes.AddShape(
+                    NetOffice.OfficeApi.Enums.MsoAutoShapeType.msoShapeRectangle,
+                    bounds.Left,
+                    bounds.Top,
+                    bounds.Width,
+                    bounds.Height);
+
+                // 设置无边框
+                shape.Line.Visible = NetOffice.OfficeApi.Enums.MsoTriState.msoFalse;
+
+                return shape;
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

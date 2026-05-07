@@ -1,78 +1,166 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_OnLoad">
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_OnLoad" loadImage="LoadImage">
   <ribbon>
     <tabs>
       <tab id="PPATab" label="PPA" insertAfterMso="TabHome">
         
-        <!-- 对齐组 -->
-        <group id="grpAlign" label="对齐">
-          <button id="btnAlignLeft" label="左对齐" 
-                  imageMso="ObjectsAlignLeft" size="large"
+        <!-- 对齐和分布组 -->
+        <group id="grpAlignDistribute" label="对齐和分布">
+          <button id="btnAlignLeft" label="左对齐"
+                  image="左对齐.png" 
                   onAction="OnAlignLeft" screentip="左对齐" supertip="将选中的形状左对齐"/>
-          <button id="btnAlignCenter" label="水平居中" 
-                  imageMso="ObjectsAlignCenterHorizontal" size="large"
+          <button id="btnAlignCenter" label="水平居中"
+                  image="水平居中.png" 
                   onAction="OnAlignCenterH" screentip="水平居中" supertip="将选中的形状水平居中对齐"/>
-          <button id="btnAlignRight" label="右对齐" 
-                  imageMso="ObjectsAlignRight" size="large"
+          <button id="btnAlignRight" label="右对齐"
+                  image="右对齐.png" 
                   onAction="OnAlignRight" screentip="右对齐" supertip="将选中的形状右对齐"/>
           <separator id="sep1"/>
-          <button id="btnAlignTop" label="顶部对齐" 
-                  imageMso="ObjectsAlignTop" size="normal"
+          <button id="btnAlignTop" label="顶部对齐"
+                  image="顶对齐.png" 
                   onAction="OnAlignTop" screentip="顶部对齐" supertip="将选中的形状顶部对齐"/>
-          <button id="btnAlignMiddle" label="垂直居中" 
-                  imageMso="ObjectsAlignMiddleVertical" size="normal"
+          <button id="btnAlignMiddle" label="垂直居中"
+                  image="垂直居中.png" 
                   onAction="OnAlignCenterV" screentip="垂直居中" supertip="将选中的形状垂直居中对齐"/>
-          <button id="btnAlignBottom" label="底部对齐" 
-                  imageMso="ObjectsAlignBottom" size="normal"
+          <button id="btnAlignBottom" label="底部对齐"
+                  image="底对齐.png" 
                   onAction="OnAlignBottom" screentip="底部对齐" supertip="将选中的形状底部对齐"/>
-        </group>
-
-        <!-- 分布组 -->
-        <group id="grpDistribute" label="分布">
-          <button id="btnDistributeH" label="水平分布" 
-                  imageMso="ObjectsAlignDistributeHorizontally" size="large"
+          <separator id="sep2"/>
+          <button id="btnDistributeH" label="水平分布"
+                  image="水平分布.png" 
                   onAction="OnDistributeH" screentip="水平分布" supertip="将选中的形状水平均匀分布"/>
-          <button id="btnDistributeV" label="垂直分布" 
-                  imageMso="ObjectsAlignDistributeVertically" size="large"
+          <button id="btnDistributeV" label="垂直分布"
+                  image="垂直分布.png" 
                   onAction="OnDistributeV" screentip="垂直分布" supertip="将选中的形状垂直均匀分布"/>
+          <separator id="sep3"/>
+          <box id="boxAlignRef" boxStyle="vertical">
+            <labelControl id="lblAlignRef" label="对齐参考"/>
+            <dropDown id="ddAlignRef" image="设置.png" showLabel="false"
+                      onAction="OnAlignRefChanged" getSelectedItemIndex="GetAlignRefIndex">
+              <item id="refSelection" label="选中对象"/>
+              <item id="refSlide" label="幻灯片"/>
+              <item id="refFirst" label="第一个对象"/>
+              <item id="refLast" label="最后一个对象"/>
+            </dropDown>
+          </box>
         </group>
 
-        <!-- 尺寸组 -->
-        <group id="grpSize" label="尺寸">
-          <button id="btnEqualWidth" label="等宽" 
-                  imageMso="ShapeSameWidth" size="normal"
-                  onAction="OnEqualWidth" screentip="等宽" supertip="将选中的形状设置为相同宽度"/>
-          <button id="btnEqualHeight" label="等高" 
-                  imageMso="ShapeSameHeight" size="normal"
-                  onAction="OnEqualHeight" screentip="等高" supertip="将选中的形状设置为相同高度"/>
-          <button id="btnEqualSize" label="等大小" 
-                  imageMso="ShapeSameSize" size="normal"
-                  onAction="OnEqualSize" screentip="等大小" supertip="将选中的形状设置为相同大小"/>
+        <!-- 吸附组 -->
+        <group id="group11" label="吸附">
+          <box id="box120">
+            <button id="Bt121" label="向左吸附" onAction="OnSnapLeft"
+                    image="吸附左侧.png"
+                    screentip="左吸附：他形右缘贴基准左缘"
+                    supertip="先选中的为基准。其余形状移到基准左侧，使其右边与基准左边共线（非左对齐）。"
+                    />
+            <button id="Bt122" label="向右吸附" onAction="OnSnapRight"
+                    image="吸附右侧.png"
+                    screentip="右吸附：他形左缘贴基准右缘"
+                    supertip="先选中的为基准。其余形状移到基准右侧，使其左边与基准右边共线。"
+                    />
+          </box>
+          <box id="box121">
+            <button id="Bt123" label="向上吸附" onAction="OnSnapTop"
+                    image="吸附上侧.png"
+                    screentip="上吸附：他形下缘贴基准上缘"
+                    supertip="先选中的为基准。其余形状移到基准上方，使其下边与基准上边共线。"
+                    />
+            <button id="Bt124" label="向下吸附" onAction="OnSnapBottom"
+                    image="吸附下侧.png"
+                    screentip="下吸附：他形上缘贴基准下缘"
+                    supertip="先选中的为基准。其余形状移到基准下方，使其上边与基准下边共线。"
+                    />
+          </box>
         </group>
 
-        <!-- 表格组 -->
-        <group id="grpTable" label="表格">
-          <button id="btnTableThreeLine" label="三线表" 
-                  imageMso="TableDrawBordersGallery" size="large"
+        <!-- 尺寸和复制组 -->
+        <group id="grpSizeDuplicate" label="尺寸和复制">
+          <box id="box201">
+            <button id="btnEqualWidth" label="等宽度"
+                    image="等宽.png" 
+                    onAction="OnEqualWidth" screentip="等宽度" supertip="将选中的形状设置为相同宽度"/>
+            <button id="btnEqualHeight" label="等高度"
+                    image="等高.png" 
+                    onAction="OnEqualHeight" screentip="等高度" supertip="将选中的形状设置为相同高度"/>
+            <button id="btnEqualSize" label="等大小"
+                    image="等尺寸.png" 
+                    onAction="OnEqualSize" screentip="等大小" supertip="将选中的形状设置为相同大小"/>
+            <button id="Bt204" label="互换" onAction="OnSwapPositionsAndSize"
+                    image="互换.png"  
+                    screentip="将选中的对象交换大小和位置"
+                    />
+          </box>
+          <box id="box202">
+            <button id="Bt211" label="左延伸" onAction="OnExtendLeft"
+                    image="吸附左侧.png"  
+                    screentip="将选中对象向左延伸对齐"
+                    />
+            <button id="Bt212" label="右延伸" onAction="OnExtendRight"
+                    image="吸附右侧.png"  
+                    screentip="将选中对象向右延伸对齐"
+                    />
+            <button id="Bt213" label="上延伸" onAction="OnExtendTop"
+                    image="吸附上侧.png"  
+                    screentip="将选中对象向上延伸对齐"
+                    />
+            <button id="Bt214" label="下延伸" onAction="OnExtendBottom"
+                    image="吸附下侧.png"  
+                    screentip="将选中对象向下延伸对齐"
+                    />
+          </box>
+          <separator id="sep4"/>
+          <button id="btnMatrixCopy" label="矩阵复制"
+                  image="等尺寸.png" 
+                  onAction="OnMatrixCopy" screentip="矩阵复制" supertip="按行列网格排列复制形状"/>
+          <button id="btnLinearCopy" label="线性复制"
+                  image="等尺寸.png" 
+                  onAction="OnLinearCopy" screentip="线性复制" supertip="按指定方向和间距复制形状"/>
+        </group>
+
+        <!-- 格式化组 -->
+        <group id="grpFormat" label="格式化">
+          <button id="btnTableThreeLine" label="三线表"
+                  image="三线表.png" 
                   onAction="OnFormatThreeLineTable" screentip="表格三线表" supertip="将选中的表格快速设置为三线表样式"/>
+          <button id="Bt501" label="表格字体" onAction="OnFormatTableFont"
+                  image="字体.png" 
+                  screentip="格式化表格字体"
+                  />
+          <separator id="sep5"/>
+          <button id="Bt502" label="文本字体" onAction="OnFormatTextBoxFont"
+                  image="字号.png" 
+                  screentip="格式化文本框内字体"
+                  />
+          <button id="Bt503" label="图表字体" onAction="OnFormatChartFont"
+                  image="图表.png" 
+                  screentip="格式化图表字体" />
         </group>
 
-        <!-- 卡片组 -->
-        <group id="grpCard" label="卡片">
+        <!-- 工具组 -->
+        <group id="grpTools" label="工具">
           <button id="btnGlassCard" label="毛玻璃卡片"
-                  imageMso="TextBoxInsertGallery" size="large"
+                  image="磨砂玻璃.png" 
                   onAction="OnCreateGlassCard" screentip="毛玻璃卡片" supertip="基于选中形状或默认位置创建毛玻璃卡片"/>
+          <button id="Bt601" label="创建矩形" onAction="OnCreateRectangle"
+                  image="格式刷.png" 
+                  screentip="如果当前选中了形状，则在每个选中形状的相同位置和大小处新建一个无边框的矩形（矩形与原形状重叠），并选中新建的这些矩形。如果当前没有选中形状，而是选中了幻灯片，则在每个选中幻灯片上添加一个无边框的矩形"
+                  />
+          <separator id="sep6"/>
+          <button id="Bt401" label="隐藏/显示" onAction="OnHideOrShowShapes"
+                  image="样式.png" 
+                  screentip="隐藏选中对象，无选中对象时显示所有"
+                  />
+          <button id="Bt402" label="裁除边角料" onAction="OnCropEdges"
+                  image="格式刷.png" 
+                  screentip="当设计元素超出 PPT 页面边缘时，点击可实现对边角料的快速裁除"
+                  />
         </group>
 
-        <!-- 参考选项 -->
-        <group id="grpOptions" label="参考">
-          <dropDown id="ddAlignRef" label="对齐参考" 
-                    onAction="OnAlignRefChanged" getSelectedItemIndex="GetAlignRefIndex">
-            <item id="refSelection" label="选中对象"/>
-            <item id="refSlide" label="幻灯片"/>
-            <item id="refFirst" label="第一个对象"/>
-            <item id="refLast" label="最后一个对象"/>
-          </dropDown>
+        <!-- 调试组 -->
+        <group id="grpDebug" label="调试">
+          <button id="btnDebug" label="调试"
+                  image="调试.png" 
+                  onAction="OnDebug" screentip="调试工具" supertip="用于测试新功能的调试入口"/>
         </group>
 
       </tab>

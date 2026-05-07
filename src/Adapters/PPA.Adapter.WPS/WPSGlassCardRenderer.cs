@@ -85,24 +85,23 @@ namespace PPA.Adapter.WPS
                 try
                 {
                     dynamic shadow = shape.Shadow;
-
-                    // 1. 设置可见性
-                    shadow.Visible = true;
-                    shadow.Size = 100f; 
-
-                    // 2. 设置阴影颜色
+                    shadow.Style = 1; // msoShadowStyleOuterShadow
+                    shadow.Type = 1; // msoShadow1
+                    shadow.Visible = -1;  // True
                     shadow.ForeColor.RGB = 0x000000;
-
-                    // 3. 设置透明度
-                    shadow.Transparency = 0.8f;
-
-                    // 模糊半径
-                    var blurRadius = config.BlurRadius > 0 ? config.BlurRadius : 10f;
-                    shadow.Blur = blurRadius;
-
-                    // 偏移量
                     shadow.OffsetX = 10f;
                     shadow.OffsetY = 10f;
+                    shadow.Transparency = 0.8f;
+                    var blurRadius = config.BlurRadius > 0 ? config.BlurRadius : 10f;
+                    shadow.Blur = blurRadius; // 模糊 10 磅
+                    shadow.Size = 100f;
+
+                    // 验证设置是否生效
+                    Console.WriteLine($"阴影类型: {shadow.Type}");
+                    Console.WriteLine($"透明度: {shadow.Transparency}");
+                    Console.WriteLine($"X偏移: {shadow.OffsetX}");
+                    Console.WriteLine($"Y偏移: {shadow.OffsetY}");
+                    Console.WriteLine($"模糊半径: {shadow.Blur}");
                 }
                 catch{ }
 

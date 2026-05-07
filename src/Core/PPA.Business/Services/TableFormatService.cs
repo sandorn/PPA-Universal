@@ -346,6 +346,66 @@ namespace PPA.Business.Services
                 FinalRowBottomBorder = finalRowBorder ?? headerBorder  
             };  
             return options;  
-        }  
+        }
+
+        public void FormatTableFont(ITableContext table, FontStyle fontStyle = null)
+        {
+            if (table == null)
+            {
+                _logger.LogWarning("表格对象为空，跳过字体格式化");
+                return;
+            }
+
+            // 如果没有提供字体样式，使用配置优先 + 固定默认值兜底
+            if (fontStyle == null)
+            {
+                var tableConfig = _config?.Table;
+                // 优先使用 DataRowFont，如果没有则使用 HeaderRowFont
+                var configFont = tableConfig?.DataRowFont ?? tableConfig?.HeaderRowFont;
+                fontStyle = new FontStyle
+                {
+                    Name = string.IsNullOrWhiteSpace(configFont?.Name) ? "+mn-lt" : configFont.Name,
+                    NameFarEast = string.IsNullOrWhiteSpace(configFont?.NameFarEast) ? "+mn-ea" : configFont.NameFarEast,
+                    Size = (configFont?.Size ?? 0) > 0 ? configFont.Size : 15f,
+                    Bold = configFont?.Bold ?? false,
+                    ThemeColorIndex = configFont?.ThemeColorIndex
+                };
+            }
+
+            _logger.LogInformation($"格式化表格字体: {fontStyle.Name}, 大小: {fontStyle.Size}");
+
+            try
+            {
+                // 遍历所有单元格，设置字体
+                for (int row = 1; row <= table.RowCount; row++)
+                {
+                    for (int col = 1; col <= table.ColumnCount; col++)
+                    {
+                        var cell = table.GetCell(row, col);
+                        if (cell != null)
+                        {
+                            // 使用 SetFont 方法统一设置字体
+                            var cellFontStyle = new PPA.Core.Abstraction.FontStyle
+                            {
+                                Name = fontStyle.Name,
+                                NameFarEast = fontStyle.NameFarEast,
+                                Size = fontStyle.Size,
+                                Bold = fontStyle.Bold,
+                                ColorRgb = fontStyle.ColorRgb,
+                                ThemeColorIndex = fontStyle.ThemeColorIndex
+                            };
+                            cell.SetFont(cellFontStyle);
+                        }
+                    }
+                }
+
+                _logger.LogInformation("表格字体格式化完成");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"格式化表格字体失败: {ex.Message}", ex);
+                throw;
+            }
+        }
     }  
 }  

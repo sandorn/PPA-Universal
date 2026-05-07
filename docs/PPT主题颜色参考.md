@@ -1,8 +1,8 @@
 # PowerPoint 主题颜色与格式化参考
 
-> 本文档记录了 PowerPoint 主题颜色、字体和效果的 API 使用说明，供开发参考。
+> 本文档记录 PowerPoint 主题颜色、字体和效果的 API 备忘，供表格/形状格式化开发查阅。
 
-**相关代码**: `PPA/Formatting/FormatHelper.cs`
+**相关代码**：主题色在 `TableFormatService`、适配器及 Office 互操作代码中使用；请以仓库内实际类型与路径为准（无独立 `FormatHelper` 路径时忽略历史路径引用）。
 
 ---
 

@@ -80,7 +80,6 @@ namespace PPA.Adapter.PowerPoint
                 case Feature.ShapeBatch:
                 case Feature.TextAdvanced:
                 case Feature.UndoRedo:
-                case Feature.Shortcuts:
                     return true;
                 default:
                     return false;

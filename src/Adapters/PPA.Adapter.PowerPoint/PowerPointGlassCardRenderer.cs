@@ -128,7 +128,7 @@ namespace PPA.Adapter.PowerPoint
                     shadow.Transparency = 0.8f; // 透明
                     // 模糊半径
                     var blurRadius = config.BlurRadius > 0 ? config.BlurRadius : 10f;
-                    shadow.Blur = blurRadius; // 模糊 10 磅，视觉距离就是 10 磅
+                    shadow.Blur = blurRadius; // 模糊 10 磅
                     shadow.OffsetX = 7.1f; // 水平偏移
                     shadow.OffsetY = 7.1f; // 垂直偏移
                     // shadow.Size = 100f;     // 大小 100%

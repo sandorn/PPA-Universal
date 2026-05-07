@@ -23,9 +23,6 @@ namespace PPA.Core.Configuration
         [XmlElement("GlassCard")]
         public GlassCardConfig GlassCard { get; set; }
 
-        [XmlElement("Shortcuts")]
-        public ShortcutsConfig Shortcuts { get; set; }
-
         [XmlElement("Logging")]
         public LoggingConfig Logging { get; set; }
 
@@ -84,19 +81,20 @@ namespace PPA.Core.Configuration
                    "  <Table StyleId=\"{2D5ABB26-0587-4C30-8999-92F81FD0307C}\" DataRowBorderWidth=\"1\" HeaderRowBorderWidth=\"1.75\" FinalRowBorderWidth=\"1.75\" " +
                    "         DataRowBorderColorIndex=\"13\" HeaderRowBorderColorIndex=\"13\" FinalRowBorderColorIndex=\"13\" " +
                    "         AutoNumberFormat=\"true\" DecimalPlaces=\"0\" NegativeTextColor=\"255\">" +
-                   "    <DataRowFont Name=\"+mn-lt\" NameFarEast=\"+mn-ea\" Size=\"9\" Bold=\"false\" ThemeColorIndex=\"13\" />" +
-                   "    <HeaderRowFont Name=\"+mn-lt\" NameFarEast=\"+mn-ea\" Size=\"10\" Bold=\"true\" ThemeColorIndex=\"13\" />" +
+                   "    <DataRowFont Name=\"+mn-lt\" NameFarEast=\"+mn-ea\" Size=\"15\" Bold=\"false\" ThemeColorIndex=\"13\" />" +
+                   "    <HeaderRowFont Name=\"+mn-lt\" NameFarEast=\"+mn-ea\" Size=\"15\" Bold=\"true\" ThemeColorIndex=\"13\" />" +
                    "    <TableSettings FirstRow=\"true\" FirstCol=\"false\" LastRow=\"false\" LastCol=\"false\" HorizBanding=\"false\" VertBanding=\"false\" />" +
                    "  </Table>" +
                    "  <Text LeftIndent=\"1\">" +
                    "    <Margins Top=\"0.2\" Bottom=\"0.2\" Left=\"0.5\" Right=\"0.5\" />" +
                    "    <Font Name=\"+mn-lt\" NameFarEast=\"+mn-ea\" Size=\"16\" Bold=\"true\" ThemeColor=\"Accent2\" />" +
                    "    <Paragraph Alignment=\"Justify\" WordWrap=\"true\" SpaceBefore=\"0\" SpaceAfter=\"0\" SpaceWithin=\"1.25\" FarEastLineBreakControl=\"true\" HangingPunctuation=\"true\" />" +
-                   "    <Bullet Type=\"Unnumbered\" Character=\"9632\" FontName=\"Arial\" RelativeSize=\"1\" ThemeColor=\"Dark1\" />" +
+                   "    <Bullet Type=\"Unnumbered\" Character=\"9632\" FontName=\"+mn-lt\" RelativeSize=\"1\" ThemeColor=\"Dark1\" />" +
                    "  </Text>" +
                    "  <Chart>" +
                    "    <RegularFont Name=\"+mn-lt\" NameFarEast=\"+mn-ea\" Size=\"8\" Bold=\"false\" ThemeColor=\"Dark1\" />" +
                    "    <TitleFont Name=\"+mn-lt\" NameFarEast=\"+mn-ea\" Size=\"11\" Bold=\"true\" ThemeColor=\"Dark1\" />" +
+                   "    <LegendFont Name=\"+mn-lt\" NameFarEast=\"+mn-ea\" Size=\"8\" Bold=\"false\" ThemeColor=\"Dark1\" />" +
                    "  </Chart>" +
                    "  <GlassCard BorderColorIndex=\"13\" BorderWidth=\"1.5\" CornerRadius=\"0.3\" " +
                    "             DefaultWidthRatio=\"0.6\" DefaultHeightRatio=\"0.25\" " +
@@ -110,7 +108,6 @@ namespace PPA.Core.Configuration
                    "    </GradientStops>" +
                    "    <TextStyle Name=\"+mn-lt\" NameFarEast=\"+mn-ea\" Size=\"16\" Bold=\"true\" ThemeColorIndex=\"13\" />" +
                    "  </GlassCard>" +
-                   "  <Shortcuts FormatTables=\"1\" FormatText=\"2\" FormatChart=\"3\" CreateBoundingBox=\"4\" />" +
                    "  <Logging EnableFileLogging=\"true\" MaxLogFiles=\"10\" MaxLogAgeDays=\"7\" MinimumLogLevel=\"Information\" RollingFileSizeMB=\"50\" />" +
                    "</PPAConfig>";
         }
@@ -202,6 +199,33 @@ namespace PPA.Core.Configuration
                     result.Table = table;
                 }
 
+            // 解析 Chart 配置
+            var chartElement = root.Element("Chart");
+            if (chartElement != null)
+            {
+                var chart = new ChartConfig();
+
+                var regularFontElement = chartElement.Element("RegularFont");
+                if (regularFontElement != null)
+                {
+                    chart.RegularFont = ParseFontElement(regularFontElement);
+                }
+
+                var titleFontElement = chartElement.Element("TitleFont");
+                if (titleFontElement != null)
+                {
+                    chart.TitleFont = ParseFontElement(titleFontElement);
+                }
+
+                var legendFontElement = chartElement.Element("LegendFont");
+                if (legendFontElement != null)
+                {
+                    chart.LegendFont = ParseFontElement(legendFontElement);
+                }
+
+                result.Chart = chart;
+            }
+
             // 解析 GlassCard 配置
             var glassCardElementRoot = root.Element("GlassCard");
             if (glassCardElementRoot != null)
@@ -279,8 +303,8 @@ namespace PPA.Core.Configuration
             {
                 var font = new FontConfig
                 {
-                    Name = (string)textStyleElement.Attribute("Name"),
-                    NameFarEast = (string)textStyleElement.Attribute("NameFarEast"),
+                    Name = NormalizeThemeFontName((string)textStyleElement.Attribute("Name")),
+                    NameFarEast = NormalizeThemeFarEastFontName((string)textStyleElement.Attribute("NameFarEast")),
                     Size = ParseFloat((string)textStyleElement.Attribute("Size"), 16f),
                     Bold = bool.TryParse((string)textStyleElement.Attribute("Bold"), out var b) && b
                 };
@@ -326,8 +350,8 @@ namespace PPA.Core.Configuration
 
             var font = new FontConfig
             {
-                Name = (string)fontElement.Attribute("Name"),
-                NameFarEast = (string)fontElement.Attribute("NameFarEast"),
+                Name = NormalizeThemeFontName((string)fontElement.Attribute("Name")),
+                NameFarEast = NormalizeThemeFarEastFontName((string)fontElement.Attribute("NameFarEast")),
                 Size = ParseFloat((string)fontElement.Attribute("Size"), 0f),
                 Bold = ParseBool((string)fontElement.Attribute("Bold"), false)
             };
@@ -358,6 +382,34 @@ namespace PPA.Core.Configuration
             {
                 // 忽略日志写入失败，避免影响主流程
             }
+        }
+
+        private static string NormalizeThemeFontName(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return value;
+            var v = value.Trim();
+
+            if (string.Equals(v, "Arial", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(v, "+正文", StringComparison.OrdinalIgnoreCase))
+            {
+                return "+mn-lt";
+            }
+
+            return v;
+        }
+
+        private static string NormalizeThemeFarEastFontName(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return value;
+            var v = value.Trim();
+
+            if (string.Equals(v, "微软雅黑", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(v, "+中文正文", StringComparison.OrdinalIgnoreCase))
+            {
+                return "+mn-ea";
+            }
+
+            return v;
         }
     }
 
@@ -470,6 +522,9 @@ namespace PPA.Core.Configuration
 
         [XmlElement("TitleFont")]
         public FontConfig TitleFont { get; set; }
+
+        [XmlElement("LegendFont")]
+        public FontConfig LegendFont { get; set; }
     }
 
     public class GlassCardConfig
@@ -529,21 +584,6 @@ namespace PPA.Core.Configuration
         /// <summary>不透明度（0-100）</summary>
         [XmlAttribute]
         public float Opacity { get; set; }
-    }
-
-    public class ShortcutsConfig
-    {
-        [XmlAttribute]
-        public int FormatTables { get; set; }
-
-        [XmlAttribute]
-        public int FormatText { get; set; }
-
-        [XmlAttribute]
-        public int FormatChart { get; set; }
-
-        [XmlAttribute]
-        public int CreateBoundingBox { get; set; }
     }
 
     /// <summary>

@@ -27,9 +27,6 @@ namespace PPA.Core.Abstraction
         TextAdvanced = 30,
 
         /// <summary>撤销/重做支持</summary>
-        UndoRedo = 40,
-
-        /// <summary>快捷键支持</summary>
-        Shortcuts = 50
+        UndoRedo = 40
     }
 }

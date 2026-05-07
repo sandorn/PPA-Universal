@@ -145,5 +145,61 @@ namespace PPA.Adapter.WPS
             try { dynShape?.Delete(); }
             catch { }
         }
+
+        public bool GetVisible(object shape)
+        {
+            dynamic dynShape = shape;
+            if (dynShape == null) return true;
+
+            try
+            {
+                int visible = dynShape.Visible ?? WPSHelper.TriState.True;
+                return visible == WPSHelper.TriState.True;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        public void SetVisible(object shape, bool visible)
+        {
+            dynamic dynShape = shape;
+            if (dynShape == null) return;
+
+            try
+            {
+                dynShape.Visible = visible ? WPSHelper.TriState.True : WPSHelper.TriState.False;
+            }
+            catch { }
+        }
+
+        public object CreateRectangle(ISlideContext slide, ShapeRect bounds)
+        {
+            if (slide?.NativeSlide == null) return null;
+
+            try
+            {
+                dynamic netSlide = slide.NativeSlide;
+                if (netSlide?.Shapes == null) return null;
+
+                // WPS 创建矩形
+                dynamic shape = netSlide.Shapes.AddShape(
+                    1, // msoShapeRectangle
+                    bounds.Left,
+                    bounds.Top,
+                    bounds.Width,
+                    bounds.Height);
+
+                // 设置无边框
+                shape.Line.Visible = WPSHelper.TriState.False;
+
+                return shape;
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

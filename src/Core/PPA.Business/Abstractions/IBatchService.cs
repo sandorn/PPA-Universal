@@ -59,6 +59,13 @@ namespace PPA.Business.Abstractions
         /// 批量替换文本
         /// </summary>
         void ReplaceText(IApplicationContext context, string find, string replace);
+
+        /// <summary>
+        /// 格式化文本框字体
+        /// </summary>
+        /// <param name="shapes">文本框形状集合</param>
+        /// <param name="fontStyle">字体样式</param>
+        void FormatTextBoxFont(System.Collections.Generic.IEnumerable<IShapeContext> shapes, FontStyle fontStyle = null);
     }
 
     /// <summary>
@@ -75,6 +82,13 @@ namespace PPA.Business.Abstractions
         /// 批量格式化当前幻灯片的图表
         /// </summary>
         void FormatCurrentSlideCharts(IApplicationContext context);
+
+        /// <summary>
+        /// 格式化图表字体
+        /// </summary>
+        /// <param name="shapes">图表形状集合</param>
+        /// <param name="fontStyle">字体样式</param>
+        void FormatChartFont(System.Collections.Generic.IEnumerable<IShapeContext> shapes, FontStyle fontStyle = null);
     }
 
     /// <summary>

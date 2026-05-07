@@ -34,5 +34,14 @@ namespace PPA.Core.Abstraction
 
         /// <summary>删除形状</summary>
         void DeleteShape(object shape);
+
+        /// <summary>获取形状可见性</summary>
+        bool GetVisible(object shape);
+
+        /// <summary>设置形状可见性</summary>
+        void SetVisible(object shape, bool visible);
+
+        /// <summary>创建矩形形状</summary>
+        object CreateRectangle(ISlideContext slide, ShapeRect bounds);
     }
 }

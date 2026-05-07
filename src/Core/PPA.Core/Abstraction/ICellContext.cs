@@ -44,7 +44,7 @@ namespace PPA.Core.Abstraction
         public string NameFarEast { get; set; }
 
         /// <summary>字体大小</summary>
-        public float Size { get; set; } = 11;
+        public float Size { get; set; } = 15;
 
         /// <summary>是否粗体</summary>
         public bool Bold { get; set; }
