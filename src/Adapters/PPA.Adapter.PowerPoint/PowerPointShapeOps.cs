@@ -1,194 +1,226 @@
+using System.Collections.Generic;
+using System.Linq;
 using PPA.Core.Abstraction;
 using NETOP = NetOffice.PowerPointApi;
 
 namespace PPA.Adapter.PowerPoint
 {
-    /// <summary>
-    /// PowerPoint 形状操作实现
-    /// </summary>
-    public class PowerPointShapeOps : IShapeOperations
-    {
-        public ShapeRect GetBounds(object shape)
-        {
-            var netShape = shape as NETOP.Shape;
-            if (netShape == null) return new ShapeRect();
+	/// <summary>
+	/// PowerPoint 形状操作实现
+	/// </summary>
+	public class PowerPointShapeOps : IShapeOperations
+	{
+		public ShapeRect GetBounds(object shape)
+		{
+			var netShape = shape as NETOP.Shape;
+			if (netShape == null) return new ShapeRect();
 
-            return new ShapeRect(
-                netShape.Left,
-                netShape.Top,
-                netShape.Width,
-                netShape.Height
-            );
-        }
+			return new ShapeRect(
+				netShape.Left,
+				netShape.Top,
+				netShape.Width,
+				netShape.Height
+			);
+		}
 
-        public void SetBounds(object shape, ShapeRect bounds)
-        {
-            var netShape = shape as NETOP.Shape;
-            if (netShape == null) return;
+		public void SetBounds(object shape, ShapeRect bounds)
+		{
+			var netShape = shape as NETOP.Shape;
+			if (netShape == null) return;
 
-            netShape.Left = bounds.Left;
-            netShape.Top = bounds.Top;
-            netShape.Width = bounds.Width;
-            netShape.Height = bounds.Height;
-        }
+			netShape.Left = bounds.Left;
+			netShape.Top = bounds.Top;
+			netShape.Width = bounds.Width;
+			netShape.Height = bounds.Height;
+		}
 
-        public float GetRotation(object shape)
-        {
-            var netShape = shape as NETOP.Shape;
-            return netShape?.Rotation ?? 0;
-        }
+		public float GetRotation(object shape)
+		{
+			var netShape = shape as NETOP.Shape;
+			return netShape?.Rotation ?? 0;
+		}
 
-        public void SetRotation(object shape, float angle)
-        {
-            var netShape = shape as NETOP.Shape;
-            if (netShape != null)
-            {
-                netShape.Rotation = angle;
-            }
-        }
+		public void SetRotation(object shape, float angle)
+		{
+			var netShape = shape as NETOP.Shape;
+			if (netShape != null)
+			{
+				netShape.Rotation = angle;
+			}
+		}
 
-        public bool IsTable(object shape)
-        {
-            var netShape = shape as NETOP.Shape;
-            if (netShape == null) return false;
+		public bool IsTable(object shape)
+		{
+			var netShape = shape as NETOP.Shape;
+			if (netShape == null) return false;
 
-            try
-            {
-                return netShape.HasTable == NetOffice.OfficeApi.Enums.MsoTriState.msoTrue;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+			try
+			{
+				return netShape.HasTable == NetOffice.OfficeApi.Enums.MsoTriState.msoTrue;
+			}
+			catch
+			{
+				return false;
+			}
+		}
 
-        public bool IsChart(object shape)
-        {
-            var netShape = shape as NETOP.Shape;
-            if (netShape == null) return false;
+		public bool IsChart(object shape)
+		{
+			var netShape = shape as NETOP.Shape;
+			if (netShape == null) return false;
 
-            try
-            {
-                return netShape.HasChart == NetOffice.OfficeApi.Enums.MsoTriState.msoTrue;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+			try
+			{
+				return netShape.HasChart == NetOffice.OfficeApi.Enums.MsoTriState.msoTrue;
+			}
+			catch
+			{
+				return false;
+			}
+		}
 
-        public bool IsTextBox(object shape)
-        {
-            var netShape = shape as NETOP.Shape;
-            if (netShape == null) return false;
+		public bool IsTextBox(object shape)
+		{
+			var netShape = shape as NETOP.Shape;
+			if (netShape == null) return false;
 
-            try
-            {
-                return netShape.Type == NetOffice.OfficeApi.Enums.MsoShapeType.msoTextBox;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+			try
+			{
+				return netShape.Type == NetOffice.OfficeApi.Enums.MsoShapeType.msoTextBox;
+			}
+			catch
+			{
+				return false;
+			}
+		}
 
-        public bool IsGroup(object shape)
-        {
-            var netShape = shape as NETOP.Shape;
-            if (netShape == null) return false;
+		public bool IsGroup(object shape)
+		{
+			var netShape = shape as NETOP.Shape;
+			if (netShape == null) return false;
 
-            try
-            {
-                return netShape.Type == NetOffice.OfficeApi.Enums.MsoShapeType.msoGroup;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+			try
+			{
+				return netShape.Type == NetOffice.OfficeApi.Enums.MsoShapeType.msoGroup;
+			}
+			catch
+			{
+				return false;
+			}
+		}
 
-        public object CopyShape(object shape)
-        {
-            var netShape = shape as NETOP.Shape;
-            if (netShape == null) return null;
+		public object CopyShape(object shape)
+		{
+			var netShape = shape as NETOP.Shape;
+			if (netShape == null) return null;
 
-            try
-            {
-                netShape.Copy();
-                var slide = netShape.Parent as NETOP.Slide;
-                slide?.Shapes.Paste();
-                return slide?.Shapes[slide.Shapes.Count];
-            }
-            catch
-            {
-                return null;
-            }
-        }
+			try
+			{
+				netShape.Copy();
+				var slide = netShape.Parent as NETOP.Slide;
+				slide?.Shapes.Paste();
+				return slide?.Shapes[slide.Shapes.Count];
+			}
+			catch
+			{
+				return null;
+			}
+		}
 
-        public void DeleteShape(object shape)
-        {
-            var netShape = shape as NETOP.Shape;
-            try
-            {
-                netShape?.Delete();
-            }
-            catch { }
-        }
+		public void DeleteShape(object shape)
+		{
+			var netShape = shape as NETOP.Shape;
+			try
+			{
+				netShape?.Delete();
+			}
+			catch { }
+		}
 
-        public bool GetVisible(object shape)
-        {
-            var netShape = shape as NETOP.Shape;
-            if (netShape == null) return true;
+		public bool GetVisible(object shape)
+		{
+			var netShape = shape as NETOP.Shape;
+			if (netShape == null) return true;
 
-            try
-            {
-                return netShape.Visible == NetOffice.OfficeApi.Enums.MsoTriState.msoTrue;
-            }
-            catch
-            {
-                return true;
-            }
-        }
+			try
+			{
+				return netShape.Visible == NetOffice.OfficeApi.Enums.MsoTriState.msoTrue;
+			}
+			catch
+			{
+				return true;
+			}
+		}
 
-        public void SetVisible(object shape, bool visible)
-        {
-            var netShape = shape as NETOP.Shape;
-            if (netShape == null) return;
+		public void SetVisible(object shape, bool visible)
+		{
+			var netShape = shape as NETOP.Shape;
+			if (netShape == null) return;
 
-            try
-            {
-                netShape.Visible = visible 
-                    ? NetOffice.OfficeApi.Enums.MsoTriState.msoTrue 
-                    : NetOffice.OfficeApi.Enums.MsoTriState.msoFalse;
-            }
-            catch { }
-        }
+			try
+			{
+				netShape.Visible = visible
+					? NetOffice.OfficeApi.Enums.MsoTriState.msoTrue
+					: NetOffice.OfficeApi.Enums.MsoTriState.msoFalse;
+			}
+			catch { }
+		}
 
-        public object CreateRectangle(ISlideContext slide, ShapeRect bounds)
-        {
-            if (slide?.NativeSlide == null) return null;
+		public object CreateRectangle(ISlideContext slide, ShapeRect bounds)
+		{
+			if (slide?.NativeSlide == null) return null;
 
-            try
-            {
-                var netSlide = slide.NativeSlide as NETOP.Slide;
-                if (netSlide?.Shapes == null) return null;
+			try
+			{
+				var netSlide = slide.NativeSlide as NETOP.Slide;
+				if (netSlide?.Shapes == null) return null;
 
-                var shape = netSlide.Shapes.AddShape(
-                    NetOffice.OfficeApi.Enums.MsoAutoShapeType.msoShapeRectangle,
-                    bounds.Left,
-                    bounds.Top,
-                    bounds.Width,
-                    bounds.Height);
+				var shape = netSlide.Shapes.AddShape(
+					NetOffice.OfficeApi.Enums.MsoAutoShapeType.msoShapeRectangle,
+					bounds.Left,
+					bounds.Top,
+					bounds.Width,
+					bounds.Height);
 
-                // 设置无边框
-                shape.Line.Visible = NetOffice.OfficeApi.Enums.MsoTriState.msoFalse;
+				// 设置无边框
+				shape.Line.Visible = NetOffice.OfficeApi.Enums.MsoTriState.msoFalse;
 
-                return shape;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-    }
+				return shape;
+			}
+			catch
+			{
+				return null;
+			}
+		}
+
+		public IShapeContext WrapShape(object nativeShape)
+		{
+			var netShape = nativeShape as NETOP.Shape;
+			return netShape == null ? null : new PowerPointShapeContext(netShape);
+		}
+
+		public IEnumerable<object> GetGroupChildShapes(object groupShape)
+		{
+			var netShape = groupShape as NETOP.Shape;
+			if (netShape == null || !IsGroup(groupShape))
+				return Enumerable.Empty<object>();
+
+			try
+			{
+				var items = netShape.GroupItems;
+				if (items == null)
+					return Enumerable.Empty<object>();
+
+				var list = new List<object>();
+				int count = items.Count;
+				for (int i = 1; i <= count; i++)
+					list.Add(items[i]);
+				return list;
+			}
+			catch
+			{
+				return Enumerable.Empty<object>();
+			}
+		}
+	}
 }

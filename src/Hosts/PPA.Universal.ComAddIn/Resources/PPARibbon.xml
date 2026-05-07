@@ -122,6 +122,11 @@
           <button id="btnTableThreeLine" label="三线表"
                   image="三线表.png" 
                   onAction="OnFormatThreeLineTable" screentip="表格三线表" supertip="将选中的表格快速设置为三线表样式"/>
+          <separator id="sepBatchThreeLine"/>
+          <button id="btnBatchThreeLineAll" label="全稿三线表"
+                  image="三线表.png"
+                  onAction="OnBatchThreeLineAll" screentip="全部幻灯片表格三线表"
+                  supertip="将当前演示文稿中所有幻灯片的表格设置为三线表样式；操作前会提示确认。"/>
           <button id="Bt501" label="表格字体" onAction="OnFormatTableFont"
                   image="字体.png" 
                   screentip="格式化表格字体"
@@ -134,6 +139,12 @@
           <button id="Bt503" label="图表字体" onAction="OnFormatChartFont"
                   image="图表.png" 
                   screentip="格式化图表字体" />
+          <separator id="sepFindReplace"/>
+          <button id="btnFindReplace" label="查找替换"
+                  image="字号.png"
+                  onAction="OnFindReplaceText"
+                  screentip="查找替换"
+                  supertip="在当前演示文稿全部幻灯片中替换文本（含文本框、表格单元格、组合内形状）"/>
         </group>
 
         <!-- 工具组 -->
