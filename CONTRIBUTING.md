@@ -6,7 +6,7 @@
 
 1. 在 Issue 中说明问题或方案（功能请先对齐 [功能扩展研究报告](docs/功能扩展研究报告.md) 中的范围，避免与路线图严重冲突）。
 2. Fork 后建分支，小步提交；PR 描述写清「动机、改动点、如何验证」。
-3. 至少本地 `dotnet build src/PPA.Layered.sln -c Release` 通过；若改 Ribbon，请在 PowerPoint 与 WPS 各测一遍图标与主要按钮。
+3. 至少本地 `dotnet build src/PPA.Layered.sln -c Release` 与 `dotnet test src/PPA.Layered.sln -c Release` 通过；若改 Ribbon，请按 [docs/Ribbon-manual-regression.md](docs/Ribbon-manual-regression.md) 在 PowerPoint 与 WPS 各测一遍。
 
 ## 代码约定（摘要）
 

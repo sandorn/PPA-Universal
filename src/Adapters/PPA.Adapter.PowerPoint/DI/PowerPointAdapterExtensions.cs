@@ -20,6 +20,8 @@ namespace PPA.Adapter.PowerPoint.DI
 			services.AddSingleton<IShapeOperations, PowerPointShapeOps>();
 			services.AddSingleton<ITableOperations, PowerPointTableOps>();
 			services.AddSingleton<ISlideOperations, PowerPointSlideOps>();
+			services.AddSingleton<ITextShapeTextOperations, PowerPointTextShapeTextOps>();
+			services.AddSingleton<IChartShapeTextOperations, PowerPointChartShapeTextOps>();
 
 			// 注册毛玻璃卡片渲染器
 			services.AddSingleton<IGlassCardRenderer, PowerPointGlassCardRenderer>();

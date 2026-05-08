@@ -10,7 +10,7 @@
 | 层级   | 路径                               | 职责                                                                                 |
 | ------ | ---------------------------------- | ------------------------------------------------------------------------------------ |
 | 核心   | `src/Core/PPA.Core`                | 抽象接口、配置 `PPAConfig`、日志 `ILogger`（`PPA.Logging`）、`CoreServiceExtensions`   |
-| 业务   | `src/Core/PPA.Business`            | 业务接口与实现、`BusinessServiceExtensions`；**不**直接引用 NetOffice / WPS COM      |
+| 业务   | `src/Core/PPA.Business`            | 业务接口与实现、`BusinessServiceExtensions`；**不**引用 NetOffice / WPS COM（文本/图表形状上的 COM 由 Core 的 `ITextShapeTextOperations` / `IChartShapeTextOperations` 抽象，Adapter 实现） |
 | 适配   | `src/Adapters/PPA.Adapter.*`       | 平台相关实现；差异收口在此                                                           |
 | 宿主   | `src/Hosts/PPA.Universal`          | 平台检测、DI 引导、`UniversalIntegration`                                            |
 | 插件壳 | `src/Hosts/PPA.Universal.ComAddIn` | COM、`PPARibbon.xml`、`RibbonCallbacks`、Ribbon 图标资源                             |
@@ -46,7 +46,7 @@
 
 ## 8. 本地验证
 
-- 常规：`dotnet build src/PPA.Layered.sln -c Release`（或仅构建 `PPA.Universal.ComAddIn` 工程）。
+- 常规：`dotnet build src/PPA.Layered.sln -c Release` 与 `dotnet test src/PPA.Layered.sln -c Release`（或仅构建 `PPA.Universal.ComAddIn` 工程）。
 - 改 COM 加载项并注册：优先用 `build\rebuild-register.bat`；若出现 DLL 复制失败，先关闭 PowerPoint/WPS 再构建。
 
 ## 9. 日期与时间

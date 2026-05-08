@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using PPA.Business.Abstractions;
+using PPA.Business.Geometry;
 using PPA.Core.Abstraction;
 using PPA.Logging;
 
@@ -40,7 +41,7 @@ namespace PPA.Business.Services
 			foreach (var shape in shapeList)
 			{
 				var bounds = shape.Bounds;
-				var newBounds = ApplyAlignment(bounds, alignment, refValue);
+				var newBounds = ShapeAlignmentMath.ApplyAlignment(bounds, alignment, refValue);
 				shape.Bounds = newBounds;
 			}
 
@@ -65,100 +66,23 @@ namespace PPA.Business.Services
 
 		private float CalculateSlideReference(AlignmentType alignment, List<IShapeContext> shapes)
 		{
-			// 获取幻灯片尺寸
 			float slideWidth = _context?.ActivePresentation?.SlideWidth ?? 960f;
 			float slideHeight = _context?.ActivePresentation?.SlideHeight ?? 540f;
-
-			switch (alignment)
-			{
-				case AlignmentType.Left:
-					return 0f;
-				case AlignmentType.Top:
-					return 0f;
-				case AlignmentType.Right:
-					return slideWidth;
-				case AlignmentType.Bottom:
-					return slideHeight;
-				case AlignmentType.CenterHorizontal:
-					return slideWidth / 2;
-				case AlignmentType.CenterVertical:
-					return slideHeight / 2;
-				default:
-					return CalculateSelectionReference(shapes, alignment);
-			}
+			var rects = shapes.Select(s => s.Bounds).ToList();
+			return ShapeAlignmentMath.CalculateSlideReference(alignment, slideWidth, slideHeight, rects);
 		}
 
-		private float CalculateSingleShapeReference(IShapeContext shape, AlignmentType alignment)
+		private static float CalculateSingleShapeReference(IShapeContext shape, AlignmentType alignment)
 		{
 			if (shape == null)
-			{
 				return 0f;
-			}
-
-			var bounds = shape.Bounds;
-			switch (alignment)
-			{
-				case AlignmentType.Left:
-					return bounds.Left;
-				case AlignmentType.Right:
-					return bounds.Right;
-				case AlignmentType.Top:
-					return bounds.Top;
-				case AlignmentType.Bottom:
-					return bounds.Bottom;
-				case AlignmentType.CenterHorizontal:
-					return bounds.CenterX;
-				case AlignmentType.CenterVertical:
-					return bounds.CenterY;
-				default:
-					return 0f;
-			}
+			return ShapeAlignmentMath.CalculateSingleShapeReference(shape.Bounds, alignment);
 		}
 
-		private float CalculateSelectionReference(List<IShapeContext> shapes, AlignmentType alignment)
+		private static float CalculateSelectionReference(List<IShapeContext> shapes, AlignmentType alignment)
 		{
-			switch (alignment)
-			{
-				case AlignmentType.Left:
-					return shapes.Min(s => s.Bounds.Left);
-				case AlignmentType.Right:
-					return shapes.Max(s => s.Bounds.Right);
-				case AlignmentType.Top:
-					return shapes.Min(s => s.Bounds.Top);
-				case AlignmentType.Bottom:
-					return shapes.Max(s => s.Bounds.Bottom);
-				case AlignmentType.CenterHorizontal:
-					var minX = shapes.Min(s => s.Bounds.Left);
-					var maxX = shapes.Max(s => s.Bounds.Right);
-					return (minX + maxX) / 2;
-				case AlignmentType.CenterVertical:
-					var minY = shapes.Min(s => s.Bounds.Top);
-					var maxY = shapes.Max(s => s.Bounds.Bottom);
-					return (minY + maxY) / 2;
-				default:
-					return 0f;
-			}
-		}
-
-		private ShapeRect ApplyAlignment(ShapeRect bounds, AlignmentType alignment, float refValue)
-		{
-			switch (alignment)
-			{
-				case AlignmentType.Left:
-					return new ShapeRect(refValue, bounds.Top, bounds.Width, bounds.Height);
-				case AlignmentType.Right:
-					return new ShapeRect(refValue - bounds.Width, bounds.Top, bounds.Width, bounds.Height);
-				case AlignmentType.Top:
-					return new ShapeRect(bounds.Left, refValue, bounds.Width, bounds.Height);
-				case AlignmentType.Bottom:
-					return new ShapeRect(bounds.Left, refValue - bounds.Height, bounds.Width, bounds.Height);
-				case AlignmentType.CenterHorizontal:
-					return new ShapeRect(refValue - bounds.Width / 2, bounds.Top, bounds.Width, bounds.Height);
-				case AlignmentType.CenterVertical:
-					return new ShapeRect(bounds.Left, refValue - bounds.Height / 2, bounds.Width, bounds.Height);
-				default:
-					return bounds;
-			}
+			var rects = shapes.Select(s => s.Bounds).ToList();
+			return ShapeAlignmentMath.CalculateSelectionReference(rects, alignment);
 		}
 
 		public void Distribute(IEnumerable<IShapeContext> shapes, DistributionType distribution)
@@ -184,39 +108,27 @@ namespace PPA.Business.Services
 			_logger.LogInformation("分布完成");
 		}
 
-		private void DistributeHorizontally(List<IShapeContext> shapes)
+		private static void DistributeHorizontally(List<IShapeContext> shapes)
 		{
 			var sorted = shapes.OrderBy(s => s.Bounds.Left).ToList();
-			var leftmost = sorted.First().Bounds.Left;
-			var rightmost = sorted.Last().Bounds.Right;
-			var totalShapeWidth = shapes.Sum(s => s.Bounds.Width);
-			var totalSpace = rightmost - leftmost - totalShapeWidth;
-			var gap = totalSpace / (shapes.Count - 1);
-
-			float currentX = leftmost;
-			foreach (var shape in sorted)
+			var rects = sorted.Select(s => s.Bounds).ToList();
+			var newLefts = ShapeAlignmentMath.ComputeHorizontalDistributedLefts(rects);
+			for (var i = 0; i < sorted.Count; i++)
 			{
-				var bounds = shape.Bounds;
-				shape.Bounds = new ShapeRect(currentX, bounds.Top, bounds.Width, bounds.Height);
-				currentX += bounds.Width + gap;
+				var bounds = sorted[i].Bounds;
+				sorted[i].Bounds = new ShapeRect(newLefts[i], bounds.Top, bounds.Width, bounds.Height);
 			}
 		}
 
-		private void DistributeVertically(List<IShapeContext> shapes)
+		private static void DistributeVertically(List<IShapeContext> shapes)
 		{
 			var sorted = shapes.OrderBy(s => s.Bounds.Top).ToList();
-			var topmost = sorted.First().Bounds.Top;
-			var bottommost = sorted.Last().Bounds.Bottom;
-			var totalShapeHeight = shapes.Sum(s => s.Bounds.Height);
-			var totalSpace = bottommost - topmost - totalShapeHeight;
-			var gap = totalSpace / (shapes.Count - 1);
-
-			float currentY = topmost;
-			foreach (var shape in sorted)
+			var rects = sorted.Select(s => s.Bounds).ToList();
+			var newTops = ShapeAlignmentMath.ComputeVerticalDistributedTops(rects);
+			for (var i = 0; i < sorted.Count; i++)
 			{
-				var bounds = shape.Bounds;
-				shape.Bounds = new ShapeRect(bounds.Left, currentY, bounds.Width, bounds.Height);
-				currentY += bounds.Height + gap;
+				var bounds = sorted[i].Bounds;
+				sorted[i].Bounds = new ShapeRect(bounds.Left, newTops[i], bounds.Width, bounds.Height);
 			}
 		}
 
@@ -272,25 +184,9 @@ namespace PPA.Business.Services
 
 			var bounds1 = shape1.Bounds;
 			var bounds2 = shape2.Bounds;
-
-			// 计算中心点
-			var center1X = bounds1.CenterX;
-			var center1Y = bounds1.CenterY;
-			var center2X = bounds2.CenterX;
-			var center2Y = bounds2.CenterY;
-
-			// 交换位置（保持各自的大小，只交换中心点）
-			shape1.Bounds = new ShapeRect(
-				center2X - bounds1.Width / 2,
-				center2Y - bounds1.Height / 2,
-				bounds1.Width,
-				bounds1.Height);
-
-			shape2.Bounds = new ShapeRect(
-				center1X - bounds2.Width / 2,
-				center1Y - bounds2.Height / 2,
-				bounds2.Width,
-				bounds2.Height);
+			var (na, nb) = ShapeAlignmentMath.SwapCenters(bounds1, bounds2);
+			shape1.Bounds = na;
+			shape2.Bounds = nb;
 
 			_logger.LogInformation("已交换两个形状的位置");
 		}
@@ -319,19 +215,7 @@ namespace PPA.Business.Services
 			foreach (var shape in otherShapes)
 			{
 				var b = shape.Bounds;
-				var dx = b.Right - b.Left;
-				var dy = b.Bottom - b.Top;
-
-				ShapeRect newBounds = snapDirection switch
-				{
-					SnapDirection.Left => new ShapeRect(refBounds.Left - dx, b.Top, dx, dy),
-					SnapDirection.Right => new ShapeRect(refBounds.Right, b.Top, dx, dy),
-					SnapDirection.Top => new ShapeRect(b.Left, refBounds.Top - dy, dx, dy),
-					SnapDirection.Bottom => new ShapeRect(b.Left, refBounds.Bottom, dx, dy),
-					_ => b
-				};
-
-				shape.Bounds = newBounds;
+				shape.Bounds = ShapeAlignmentMath.SnapOtherToReference(b, refBounds, snapDirection);
 			}
 
 			_logger.LogInformation("吸附完成");

@@ -17,5 +17,7 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Restore and build (Release)
-        run: dotnet build src/PPA.Layered.sln -c Release
+      - name: Restore, build, test (Release)
+        run: |
+          dotnet build src/PPA.Layered.sln -c Release
+          dotnet test src/PPA.Layered.sln -c Release --no-build

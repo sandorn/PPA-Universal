@@ -19,6 +19,8 @@ namespace PPA.Adapter.WPS.DI
 			services.AddSingleton<IShapeOperations, WPSShapeOps>();
 			services.AddSingleton<ITableOperations, WPSTableOps>();
 			services.AddSingleton<ISlideOperations, WPSSlideOps>();
+			services.AddSingleton<ITextShapeTextOperations, WPSTextShapeTextOps>();
+			services.AddSingleton<IChartShapeTextOperations, WPSChartShapeTextOps>();
 
 			// 注册毛玻璃卡片渲染器
 			services.AddSingleton<IGlassCardRenderer, WPSGlassCardRenderer>();

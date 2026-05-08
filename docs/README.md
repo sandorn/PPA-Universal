@@ -32,12 +32,12 @@ build\rebuild-register.bat
 
 ## 持续集成
 
-推送到 `main` / `master` 或针对这些分支的 PR 时，会在 Windows 上执行 `dotnet build src/PPA.Layered.sln -c Release`（见仓库 `.github/workflows/ci.yml`）。本地提交前仍建议先执行一次相同构建。
+推送到 `main` / `master` 或针对这些分支的 PR 时，会在 Windows 上执行 `dotnet build` 与 `dotnet test`（见 `.github/workflows/ci.yml`）。本地提交前仍建议执行：`dotnet build src/PPA.Layered.sln -c Release` 与 `dotnet test src/PPA.Layered.sln -c Release`。
 
 ## 分层约定（简版）
 
 - `src/Core/PPA.Core`：抽象、配置、日志、DI 基础
-- `src/Core/PPA.Business`：平台无关业务逻辑
+- `src/Core/PPA.Business`：平台无关业务逻辑（不引用 NetOffice；文本框/图表 COM 细节由 `ITextShapeTextOperations`、`IChartShapeTextOperations` 在 Adapter 实现）
 - `src/Adapters/PPA.Adapter.*`：平台差异实现（PPT/WPS）
 - `src/Hosts/PPA.Universal`：平台检测与集成
 - `src/Hosts/PPA.Universal.ComAddIn`：COM 入口与 Ribbon
@@ -53,11 +53,12 @@ build\rebuild-register.bat
 
 1. 先在 Issue 或 PR 描述中说明动机与范围
 2. 保持单一职责改动，避免无关重构
-3. 至少本地 `dotnet build` 通过；改 Ribbon 需在 PowerPoint/WPS 双测
+3. 至少本地 `dotnet build` 与 `dotnet test` 通过；改 Ribbon 请按 [Ribbon-manual-regression.md](Ribbon-manual-regression.md) 在 PowerPoint/WPS 双测
 4. PR 写清：改了什么、为什么、如何验证
 
 ## 专题文档
 
+- [Ribbon-manual-regression.md](Ribbon-manual-regression.md)（Ribbon 双宿主手工回归）
 - [项目完善规划.md](项目完善规划.md)
 - [功能扩展研究报告.md](功能扩展研究报告.md)
 - [三线表相关功能梳理.md](三线表相关功能梳理.md)

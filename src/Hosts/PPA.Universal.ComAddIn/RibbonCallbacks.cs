@@ -721,9 +721,10 @@ namespace PPA.Universal.ComAddIn
 				// 使用撤销作用域包裹所有操作
 				// PowerPoint: 创建撤销边界
 				// WPS: 使用 BeginUndoGroup/EndUndoGroup 配对
+				var context = UniversalIntegration.Context;
 				using (CreateUndoScope("三线表格式化"))
 				{
-					TryClearTableFormatMenu(UniversalIntegration.Context);
+					TryClearTableFormatMenu(context);
 
 					foreach (var shape in tableShapes)
 					{
