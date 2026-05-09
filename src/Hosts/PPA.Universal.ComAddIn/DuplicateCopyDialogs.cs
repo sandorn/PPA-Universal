@@ -17,7 +17,7 @@ namespace PPA.Universal.ComAddIn
 			rowSpacing = columnSpacing = 0;
 			cfg ??= new DuplicateConfig();
 
-			using var f = NewDialogShell("矩阵复制", 360, 240);
+			using var f = NewDialogShell("矩阵复制", 400, 268, 340, 240);
 			var layout = NewGrid();
 
 			var numRows = NewNumeric(cfg.MatrixRows, 1, 50);
@@ -29,12 +29,9 @@ namespace PPA.Universal.ComAddIn
 			AddRow(layout, "列数", numCols);
 			AddRow(layout, "行间距", numRowGap);
 			AddRow(layout, "列间距", numColGap);
+			AppendStretchRow(layout);
 
 			var buttons = NewOkCancel(out var ok, out var cancel);
-			buttons.Dock = DockStyle.Bottom;
-
-			layout.Dock = DockStyle.Fill;
-			layout.Padding = new Padding(12, 12, 12, 4);
 
 			f.Controls.Add(buttons);
 			f.Controls.Add(layout);
@@ -63,27 +60,44 @@ namespace PPA.Universal.ComAddIn
 			direction = LinearCopyDirection.Horizontal;
 			cfg ??= new DuplicateConfig();
 
-			using var f = NewDialogShell("线性复制", 360, 240);
+			using var f = NewDialogShell("线性复制", 400, 240, 340, 220);
 			var layout = NewGrid();
 
 			var numCount = NewNumeric(cfg.LinearCopyCount, 1, 200);
 			var numSpacing = NewNumericDecimal((decimal)cfg.LinearSpacing, 0, 500);
 
-			var dirPanel = new FlowLayoutPanel { FlowDirection = FlowDirection.LeftToRight, AutoSize = true, WrapContents = false };
-			var rbH = new RadioButton { Text = "水平（向右）", AutoSize = true, Checked = !IsVertical(cfg.LinearDirection) };
-			var rbV = new RadioButton { Text = "垂直（向下）", AutoSize = true, Checked = IsVertical(cfg.LinearDirection) };
+			var dirPanel = new FlowLayoutPanel
+			{
+				FlowDirection = FlowDirection.LeftToRight,
+				AutoSize = true,
+				WrapContents = false,
+				Dock = DockStyle.Fill,
+				Margin = new Padding(0, 2, 0, 4),
+				Padding = new Padding(0)
+			};
+			var rbH = new RadioButton
+			{
+				Text = "水平（向右）",
+				AutoSize = true,
+				Checked = !IsVertical(cfg.LinearDirection),
+				Margin = new Padding(0, 6, 20, 0)
+			};
+			var rbV = new RadioButton
+			{
+				Text = "垂直（向下）",
+				AutoSize = true,
+				Checked = IsVertical(cfg.LinearDirection),
+				Margin = new Padding(0, 6, 0, 0)
+			};
 			dirPanel.Controls.Add(rbH);
 			dirPanel.Controls.Add(rbV);
 
 			AddRow(layout, "复制份数", numCount);
 			AddRow(layout, "间距", numSpacing);
 			AddRow(layout, "方向", dirPanel);
+			AppendStretchRow(layout);
 
 			var buttons = NewOkCancel(out var ok, out var cancel);
-			buttons.Dock = DockStyle.Bottom;
-
-			layout.Dock = DockStyle.Fill;
-			layout.Padding = new Padding(12, 12, 12, 4);
 
 			f.Controls.Add(buttons);
 			f.Controls.Add(layout);
@@ -103,18 +117,12 @@ namespace PPA.Universal.ComAddIn
 			return true;
 		}
 
-		private static Form NewDialogShell(string title, int w, int h)
+		private static Form NewDialogShell(string title, int w, int h, int minW, int minH)
 		{
-			return new Form
-			{
-				Text = title,
-				FormBorderStyle = FormBorderStyle.FixedDialog,
-				StartPosition = FormStartPosition.CenterScreen,
-				MinimizeBox = false,
-				MaximizeBox = false,
-				ShowInTaskbar = false,
-				ClientSize = new Size(w, h)
-			};
+			var f = new Form { ClientSize = new Size(w, h) };
+			ComDialogChrome.ApplyModalForm(f, true, new Size(minW, minH));
+			f.Text = ComDialogChrome.SubstantiveTitle(title);
+			return f;
 		}
 
 		private static TableLayoutPanel NewGrid()
@@ -122,28 +130,17 @@ namespace PPA.Universal.ComAddIn
 			var layout = new TableLayoutPanel
 			{
 				ColumnCount = 2,
-				AutoSize = true
+				AutoSize = false,
+				Dock = DockStyle.Fill,
+				Padding = ComDialogChrome.ContentPadding
 			};
-			layout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(SizeType.Percent, 42f));
-			layout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(SizeType.Percent, 58f));
+			layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, ComDialogChrome.LabelColumnWidthPx));
+			layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
 			return layout;
 		}
 
-		private static FlowLayoutPanel NewOkCancel(out Button ok, out Button cancel)
-		{
-			var buttons = new FlowLayoutPanel
-			{
-				FlowDirection = FlowDirection.RightToLeft,
-				Padding = new Padding(12, 4, 12, 8),
-				AutoSize = true,
-				WrapContents = false
-			};
-			ok = new Button { Text = "确定", DialogResult = DialogResult.OK, AutoSize = true };
-			cancel = new Button { Text = "取消", DialogResult = DialogResult.Cancel, AutoSize = true };
-			buttons.Controls.Add(ok);
-			buttons.Controls.Add(cancel);
-			return buttons;
-		}
+		private static FlowLayoutPanel NewOkCancel(out Button ok, out Button cancel) =>
+			ComDialogChrome.CreateOkCancelFooter(out ok, out cancel);
 
 		private static bool IsVertical(string linearDirection)
 		{
@@ -152,10 +149,39 @@ namespace PPA.Universal.ComAddIn
 
 		private static void AddRow(TableLayoutPanel layout, string labelText, Control editor)
 		{
-			int row = layout.RowCount++;
+			var row = layout.RowCount++;
 			layout.RowStyles.Add(new System.Windows.Forms.RowStyle(SizeType.AutoSize));
-			layout.Controls.Add(new Label { Text = labelText, AutoSize = true, Anchor = AnchorStyles.Left }, 0, row);
+
+			var lbl = new Label
+			{
+				Text = labelText,
+				AutoSize = true,
+				Anchor = AnchorStyles.Left,
+				TextAlign = ContentAlignment.MiddleLeft,
+				Margin = new Padding(0, 10, 12, 4)
+			};
+
+			editor.Margin = new Padding(0, 6, 0, 4);
+			if (editor is FlowLayoutPanel)
+				editor.Dock = DockStyle.Fill;
+			else
+			{
+				editor.Dock = DockStyle.None;
+				editor.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
+			}
+
+			layout.Controls.Add(lbl, 0, row);
 			layout.Controls.Add(editor, 1, row);
+		}
+
+		/// <summary>底部弹性行：窗口拉高时留白在下方，避免控件被垂直拉长变形。</summary>
+		private static void AppendStretchRow(TableLayoutPanel layout)
+		{
+			var row = layout.RowCount++;
+			layout.RowStyles.Add(new System.Windows.Forms.RowStyle(SizeType.Percent, 100f));
+			var filler = new Panel { Dock = DockStyle.Fill, Margin = Padding.Empty };
+			layout.Controls.Add(filler, 0, row);
+			layout.SetColumnSpan(filler, 2);
 		}
 
 		private static NumericUpDown NewNumeric(int value, int min, int max)
@@ -166,7 +192,8 @@ namespace PPA.Universal.ComAddIn
 				Maximum = max,
 				Value = Clamp(value, min, max),
 				DecimalPlaces = 0,
-				Width = 120
+				ThousandsSeparator = false,
+				MinimumSize = new Size(120, 0)
 			};
 		}
 
@@ -179,7 +206,8 @@ namespace PPA.Universal.ComAddIn
 				DecimalPlaces = 2,
 				Increment = 1,
 				Value = ClampDecimal(value, min, max),
-				Width = 120
+				ThousandsSeparator = false,
+				MinimumSize = new Size(120, 0)
 			};
 		}
 

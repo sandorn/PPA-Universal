@@ -40,7 +40,7 @@
 
 ## 7. 配置与文档
 
-- **`PPAConfig.xml`**（默认 `%LOCALAPPDATA%\PPA.Universal\PPAConfig.xml`，`PPAConfig.LoadOrCreate`）：顶层以当前代码为准，含 **`Table`、`Text`、`Chart`**（`Chart` 内含 `RegularFont` / `TitleFont` / `LegendFont`）、**`GlassCard`、`Logging`**。默认 XML 模板见 `PPAConfig.GetDefaultXmlContent()`。
+- **`PPAConfig.xml`**（默认 `%LOCALAPPDATA%\PPA.Universal\PPAConfig.xml`，`PPAConfig.LoadOrCreate`）：顶层以当前代码为准，含 **`Defaults`**（幻灯片宽高兜底）、**`Table`、`Text`、`Chart`**（`Chart` 内含 `RegularFont` / `TitleFont` / `LegendFont`）、**`GlassCard`、`Duplicate`、`Logging`**。Ribbon 与各节对应关系见 **`docs/PPAConfig与Ribbon对应关系.md`**。默认 XML 模板见 `PPAConfig.GetDefaultXmlContent()`；代码侧与模板对齐的兜底集中为 **`PpaConfigTemplateFallbacks`**（勿再散落魔法数）。
 - 新增或变更 **`PPAConfig`** 字段：在代码/XML 样例或 `docs/` 中说明含义与默认值。
 - 引入新服务、改分层或 Ribbon 契约：**同步更新** `docs/`（见 **`docs/README.md`** 索引）。
 

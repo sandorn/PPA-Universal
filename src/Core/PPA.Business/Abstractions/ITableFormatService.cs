@@ -39,10 +39,13 @@ namespace PPA.Business.Abstractions
 		void DistributeRowHeights(ITableContext table);
 
 		/// <summary>
-		/// 格式化表格字体
+		/// 格式化表格字体。
 		/// </summary>
 		/// <param name="table">表格上下文</param>
-		/// <param name="fontStyle">字体样式</param>
+		/// <param name="fontStyle">
+		/// 若为 null：第 1 行使用配置 <c>Table.HeaderRowFont</c>，其余行使用 <c>Table.DataRowFont</c>（与三线表表头/数据区分一致）；
+		/// 若非 null：全表单元格统一使用该样式。
+		/// </param>
 		void FormatTableFont(ITableContext table, FontStyle fontStyle = null);
 	}
 

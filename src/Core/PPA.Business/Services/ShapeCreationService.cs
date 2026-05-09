@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using PPA.Business.Abstractions;
 using PPA.Core.Abstraction;
+using PPA.Core.Configuration;
 using PPA.Logging;
 
 namespace PPA.Business.Services
@@ -14,12 +15,14 @@ namespace PPA.Business.Services
 		private readonly ILogger _logger;
 		private readonly IShapeOperations _shapeOps;
 		private readonly IApplicationContext _context;
+		private readonly PPAConfig _config;
 
-		public ShapeCreationService(ILogger logger, IShapeOperations shapeOps, IApplicationContext context)
+		public ShapeCreationService(ILogger logger, IShapeOperations shapeOps, IApplicationContext context, PPAConfig config)
 		{
 			_logger = logger ?? NullLogger.Instance;
 			_shapeOps = shapeOps;
 			_context = context;
+			_config = config;
 		}
 
 		public IEnumerable<IShapeContext> CreateRectanglesAtShapes(IEnumerable<IShapeContext> shapes)
@@ -70,13 +73,19 @@ namespace PPA.Business.Services
 				return Enumerable.Empty<IShapeContext>();
 			}
 
-			// 默认矩形位置和大小（幻灯片中心，200x100）
+			var d = _config?.Defaults;
+			var slideW = _context?.ActivePresentation?.SlideWidth
+				?? (d != null && d.SlideWidthFallback > 0 ? d.SlideWidthFallback : PpaConfigTemplateFallbacks.SlideWidthFallback);
+			var slideH = _context?.ActivePresentation?.SlideHeight
+				?? (d != null && d.SlideHeightFallback > 0 ? d.SlideHeightFallback : PpaConfigTemplateFallbacks.SlideHeightFallback);
+			const float rw = 200f;
+			const float rh = 100f;
 			var defaultBounds = bounds ?? new ShapeRect
 			{
-				Left = 380f,  // 假设幻灯片宽度 960，居中
-				Top = 220f,   // 假设幻灯片高度 540，居中
-				Width = 200f,
-				Height = 100f
+				Left = (slideW - rw) / 2f,
+				Top = (slideH - rh) / 2f,
+				Width = rw,
+				Height = rh
 			};
 
 			_logger.LogInformation($"在 {slideList.Count} 个幻灯片上创建矩形");

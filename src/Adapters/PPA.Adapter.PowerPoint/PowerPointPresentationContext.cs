@@ -1,4 +1,5 @@
 using PPA.Core.Abstraction;
+using PPA.Core.Configuration;
 using NETOP = NetOffice.PowerPointApi;
 
 namespace PPA.Adapter.PowerPoint
@@ -9,10 +10,16 @@ namespace PPA.Adapter.PowerPoint
 	public class PowerPointPresentationContext : IPresentationContext
 	{
 		private readonly NETOP.Presentation _presentation;
+		private readonly float _slideWidthFallback;
+		private readonly float _slideHeightFallback;
 
-		public PowerPointPresentationContext(NETOP.Presentation presentation)
+		public PowerPointPresentationContext(NETOP.Presentation presentation,
+			float slideWidthFallback = PpaConfigTemplateFallbacks.SlideWidthFallback,
+			float slideHeightFallback = PpaConfigTemplateFallbacks.SlideHeightFallback)
 		{
 			_presentation = presentation;
+			_slideWidthFallback = slideWidthFallback > 0 ? slideWidthFallback : PpaConfigTemplateFallbacks.SlideWidthFallback;
+			_slideHeightFallback = slideHeightFallback > 0 ? slideHeightFallback : PpaConfigTemplateFallbacks.SlideHeightFallback;
 		}
 
 		public string Name => _presentation?.Name ?? string.Empty;
@@ -25,8 +32,8 @@ namespace PPA.Adapter.PowerPoint
 		{
 			get
 			{
-				try { return _presentation?.PageSetup?.SlideWidth ?? 960f; }
-				catch { return 960f; }
+				try { return _presentation?.PageSetup?.SlideWidth ?? _slideWidthFallback; }
+				catch { return _slideWidthFallback; }
 			}
 		}
 
@@ -34,8 +41,8 @@ namespace PPA.Adapter.PowerPoint
 		{
 			get
 			{
-				try { return _presentation?.PageSetup?.SlideHeight ?? 540f; }
-				catch { return 540f; }
+				try { return _presentation?.PageSetup?.SlideHeight ?? _slideHeightFallback; }
+				catch { return _slideHeightFallback; }
 			}
 		}
 

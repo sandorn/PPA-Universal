@@ -5,12 +5,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 using System.Xml.Linq;
+using PPA.Core.Abstraction;
 
 namespace PPA.Core.Configuration
 {
 	[XmlRoot("PPAConfig")]
 	public class PPAConfig
 	{
+		/// <summary>幻灯片尺寸等全局兜底（对齐参考、适配器读宽失败时等）。</summary>
+		[XmlElement("Defaults")]
+		public DefaultsConfig Defaults { get; set; }
+
 		[XmlElement("Table")]
 		public TableConfig Table { get; set; }
 
@@ -68,13 +73,26 @@ namespace PPA.Core.Configuration
 				File.WriteAllText(configPath, GetDefaultXmlContent());
 
 				var fallback = TryLoadWithXDocument(configPath);
-				return fallback ?? new PPAConfig();
+				return fallback ?? LoadFromDefaultXmlString() ?? new PPAConfig();
 			}
 			catch (Exception ex)
 			{
-				// 即使重写默认配置或再次解析失败，也要记录日志，最终退回到空的 PPAConfig
+				// 即使重写默认配置或再次解析失败，也要记录日志，最终退回到模板默认值或空对象
 				TryLogConfigError(configPath, ex);
-				return new PPAConfig();
+				return LoadFromDefaultXmlString() ?? new PPAConfig();
+			}
+		}
+
+		/// <summary>内存解析默认 XML 字符串，与磁盘模板内容一致（极端失败路径的最后兜底）。</summary>
+		private static PPAConfig LoadFromDefaultXmlString()
+		{
+			try
+			{
+				return TryLoadWithXDocument(XDocument.Parse(GetDefaultXmlContent()));
+			}
+			catch
+			{
+				return null;
 			}
 		}
 
@@ -82,6 +100,7 @@ namespace PPA.Core.Configuration
 		{
 			return "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
 				   "<PPAConfig>" +
+				   "  <Defaults SlideWidthFallback=\"960\" SlideHeightFallback=\"540\" />" +
 				   "  <Table StyleId=\"{2D5ABB26-0587-4C30-8999-92F81FD0307C}\" DataRowBorderWidth=\"1\" HeaderRowBorderWidth=\"1.75\" FinalRowBorderWidth=\"1.75\" " +
 				   "         DataRowBorderColorIndex=\"13\" HeaderRowBorderColorIndex=\"13\" FinalRowBorderColorIndex=\"13\" " +
 				   "         AutoNumberFormat=\"true\" DecimalPlaces=\"0\" NegativeTextColor=\"255\">" +
@@ -123,8 +142,20 @@ namespace PPA.Core.Configuration
 		/// </summary>
 		private static PPAConfig TryLoadWithXDocument(string configPath)
 		{
-			var doc = XDocument.Load(configPath);
-			var root = doc.Root;
+			try
+			{
+				var doc = XDocument.Load(configPath);
+				return TryLoadWithXDocument(doc);
+			}
+			catch
+			{
+				return null;
+			}
+		}
+
+		private static PPAConfig TryLoadWithXDocument(XDocument doc)
+		{
+			var root = doc?.Root;
 			if (root == null || !string.Equals(root.Name.LocalName, "PPAConfig", StringComparison.OrdinalIgnoreCase))
 			{
 				return null;
@@ -260,21 +291,167 @@ namespace PPA.Core.Configuration
 				}
 
 				var dir = (string)dupEl.Attribute("LinearDirection");
-				if (string.IsNullOrWhiteSpace(dir)) dir = "Horizontal";
+				var dupFb = new DuplicateConfig();
+				if (string.IsNullOrWhiteSpace(dir)) dir = dupFb.LinearDirection;
 
 				result.Duplicate = new DuplicateConfig
 				{
-					MatrixRows = PI((string)dupEl.Attribute("MatrixRows"), 3),
-					MatrixColumns = PI((string)dupEl.Attribute("MatrixColumns"), 3),
-					MatrixRowSpacing = PF((string)dupEl.Attribute("MatrixRowSpacing"), 20f),
-					MatrixColumnSpacing = PF((string)dupEl.Attribute("MatrixColumnSpacing"), 20f),
-					LinearCopyCount = PI((string)dupEl.Attribute("LinearCopyCount"), 5),
-					LinearSpacing = PF((string)dupEl.Attribute("LinearSpacing"), 20f),
+					MatrixRows = PI((string)dupEl.Attribute("MatrixRows"), dupFb.MatrixRows),
+					MatrixColumns = PI((string)dupEl.Attribute("MatrixColumns"), dupFb.MatrixColumns),
+					MatrixRowSpacing = PF((string)dupEl.Attribute("MatrixRowSpacing"), dupFb.MatrixRowSpacing),
+					MatrixColumnSpacing = PF((string)dupEl.Attribute("MatrixColumnSpacing"), dupFb.MatrixColumnSpacing),
+					LinearCopyCount = PI((string)dupEl.Attribute("LinearCopyCount"), dupFb.LinearCopyCount),
+					LinearSpacing = PF((string)dupEl.Attribute("LinearSpacing"), dupFb.LinearSpacing),
 					LinearDirection = dir.Trim()
 				};
 			}
 
+			var defaultsEl = root.Element("Defaults");
+			if (defaultsEl != null)
+			{
+				float DF(string v, float fb)
+				{
+					if (string.IsNullOrWhiteSpace(v)) return fb;
+					return float.TryParse(v, System.Globalization.NumberStyles.Float,
+						System.Globalization.CultureInfo.InvariantCulture, out var f) ? f : fb;
+				}
+
+				var w = DF((string)defaultsEl.Attribute("SlideWidthFallback"), PpaConfigTemplateFallbacks.SlideWidthFallback);
+				var h = DF((string)defaultsEl.Attribute("SlideHeightFallback"), PpaConfigTemplateFallbacks.SlideHeightFallback);
+				result.Defaults = new DefaultsConfig
+				{
+					SlideWidthFallback = w > 0 ? w : PpaConfigTemplateFallbacks.SlideWidthFallback,
+					SlideHeightFallback = h > 0 ? h : PpaConfigTemplateFallbacks.SlideHeightFallback
+				};
+			}
+
+			var textRoot = root.Element("Text");
+			if (textRoot != null)
+			{
+				result.Text = ParseTextConfigElement(textRoot);
+			}
+
+			var loggingRoot = root.Element("Logging");
+			if (loggingRoot != null)
+			{
+				result.Logging = ParseLoggingConfigElement(loggingRoot);
+			}
+
 			return result;
+		}
+
+		private static TextConfig ParseTextConfigElement(XElement textElement)
+		{
+			string Ga(XElement e, string name) => (string)e.Attribute(name);
+
+			float PF(string v, float fb)
+			{
+				if (string.IsNullOrWhiteSpace(v)) return fb;
+				return float.TryParse(v, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var f)
+					? f
+					: fb;
+			}
+
+			bool PB(string v, bool fb)
+			{
+				if (string.IsNullOrWhiteSpace(v)) return fb;
+				return bool.TryParse(v, out var b) ? b : fb;
+			}
+
+			var text = new TextConfig
+			{
+				LeftIndent = PF(Ga(textElement, "LeftIndent"), 0f)
+			};
+
+			var marginsEl = textElement.Element("Margins");
+			if (marginsEl != null)
+			{
+				text.Margins = new MarginsConfig
+				{
+					Top = PF(Ga(marginsEl, "Top"), 0f),
+					Bottom = PF(Ga(marginsEl, "Bottom"), 0f),
+					Left = PF(Ga(marginsEl, "Left"), 0f),
+					Right = PF(Ga(marginsEl, "Right"), 0f)
+				};
+			}
+
+			var fontEl = textElement.Element("Font");
+			if (fontEl != null)
+			{
+				text.Font = ParseFontElement(fontEl);
+			}
+
+			var paraEl = textElement.Element("Paragraph");
+			if (paraEl != null)
+			{
+				text.Paragraph = new ParagraphConfig
+				{
+					Alignment = Ga(paraEl, "Alignment"),
+					WordWrap = PB(Ga(paraEl, "WordWrap"), true),
+					SpaceBefore = PF(Ga(paraEl, "SpaceBefore"), 0f),
+					SpaceAfter = PF(Ga(paraEl, "SpaceAfter"), 0f),
+					SpaceWithin = PF(Ga(paraEl, "SpaceWithin"), 0f),
+					FarEastLineBreakControl = PB(Ga(paraEl, "FarEastLineBreakControl"), true),
+					HangingPunctuation = PB(Ga(paraEl, "HangingPunctuation"), true)
+				};
+			}
+
+			var bulletEl = textElement.Element("Bullet");
+			if (bulletEl != null)
+			{
+				int PI(string v, int fb)
+				{
+					if (string.IsNullOrWhiteSpace(v)) return fb;
+					return int.TryParse(v, out var i) ? i : fb;
+				}
+
+				var bullet = new BulletConfig
+				{
+					Type = Ga(bulletEl, "Type"),
+					Character = PI(Ga(bulletEl, "Character"), 0),
+					FontName = Ga(bulletEl, "FontName"),
+					RelativeSize = PF(Ga(bulletEl, "RelativeSize"), 1f)
+				};
+				var btci = Ga(bulletEl, "ThemeColorIndex");
+				if (!string.IsNullOrWhiteSpace(btci) && int.TryParse(btci, out var bix))
+					bullet.ThemeColorIndex = bix;
+				else
+				{
+					var btc = ThemeColorIndexHelper.TryParse(Ga(bulletEl, "ThemeColor"));
+					if (btc.HasValue)
+						bullet.ThemeColorIndex = btc.Value;
+				}
+
+				text.Bullet = bullet;
+			}
+
+			return text;
+		}
+
+		private static LoggingConfig ParseLoggingConfigElement(XElement logElement)
+		{
+			string Ga(XElement e, string name) => (string)e.Attribute(name);
+
+			bool PB(string v, bool fb)
+			{
+				if (string.IsNullOrWhiteSpace(v)) return fb;
+				return bool.TryParse(v, out var b) ? b : fb;
+			}
+
+			int PI(string v, int fb)
+			{
+				if (string.IsNullOrWhiteSpace(v)) return fb;
+				return int.TryParse(v, out var i) ? i : fb;
+			}
+
+			return new LoggingConfig
+			{
+				EnableFileLogging = PB(Ga(logElement, "EnableFileLogging"), true),
+				MaxLogFiles = PI(Ga(logElement, "MaxLogFiles"), 10),
+				MaxLogAgeDays = PI(Ga(logElement, "MaxLogAgeDays"), 7),
+				MinimumLogLevel = Ga(logElement, "MinimumLogLevel") ?? "Information",
+				RollingFileSizeMB = PI(Ga(logElement, "RollingFileSizeMB"), 50)
+			};
 		}
 
 		/// <summary>
@@ -351,6 +528,12 @@ namespace PPA.Core.Configuration
 				{
 					font.ThemeColorIndex = themeIndex;
 				}
+				else
+				{
+					var tc = ThemeColorIndexHelper.TryParse((string)textStyleElement.Attribute("ThemeColor"));
+					if (tc.HasValue)
+						font.ThemeColorIndex = tc.Value;
+				}
 
 				gc.TextStyle = font;
 			}
@@ -398,6 +581,13 @@ namespace PPA.Core.Configuration
 			if (parsedThemeIndex.HasValue)
 			{
 				font.ThemeColorIndex = parsedThemeIndex.Value;
+			}
+			else
+			{
+				var themeColorName = (string)fontElement.Attribute("ThemeColor");
+				var fromName = ThemeColorIndexHelper.TryParse(themeColorName);
+				if (fromName.HasValue)
+					font.ThemeColorIndex = fromName.Value;
 			}
 
 			return font;
@@ -448,6 +638,18 @@ namespace PPA.Core.Configuration
 
 			return v;
 		}
+	}
+
+	/// <summary>
+	/// 全局兜底参数（无法从宿主读到演示文稿页面大小时使用）。
+	/// </summary>
+	public class DefaultsConfig
+	{
+		[XmlAttribute]
+		public float SlideWidthFallback { get; set; } = 960f;
+
+		[XmlAttribute]
+		public float SlideHeightFallback { get; set; } = 540f;
 	}
 
 	public class TableConfig
@@ -724,6 +926,24 @@ namespace PPA.Core.Configuration
 				}
 			}
 		}
+
+		/// <summary>
+		/// 映射为 <see cref="FontStyle"/>；空名称或字号≤0 时使用主题占位字体与 15pt（与默认模板中表格数据行字号一致）。
+		/// </summary>
+		public FontStyle ToFontStyle()
+		{
+			const float fallbackSize = 15f;
+			const string fallbackLatin = "+mn-lt";
+			const string fallbackEastAsia = "+mn-ea";
+			return new FontStyle
+			{
+				Name = string.IsNullOrWhiteSpace(Name) ? fallbackLatin : Name,
+				NameFarEast = string.IsNullOrWhiteSpace(NameFarEast) ? fallbackEastAsia : NameFarEast,
+				Size = Size > 0 ? Size : fallbackSize,
+				Bold = Bold,
+				ThemeColorIndex = ThemeColorIndex
+			};
+		}
 	}
 
 	public class TableSettingsConfig
@@ -815,6 +1035,54 @@ namespace PPA.Core.Configuration
 					ThemeColorIndex = parsed.Value;
 				}
 			}
+		}
+	}
+
+	/// <summary>
+	/// 与 <see cref="PPAConfig.GetDefaultXmlContent"/> 中模板一致，供「节点缺失 / 解析失败 / 代码兜底」单点引用，避免魔法数与 XML 漂移。
+	/// </summary>
+	public static class PpaConfigTemplateFallbacks
+	{
+		public const float SlideWidthFallback = 960f;
+		public const float SlideHeightFallback = 540f;
+
+		/// <summary>默认模板中 <c>Text/Font</c>（Ribbon「文本字体」在 Text 整节缺失时的兜底）。</summary>
+		public static FontStyle TextBoxRibbonFontStyle()
+		{
+			return new FontConfig
+			{
+				Name = "+mn-lt",
+				NameFarEast = "+mn-ea",
+				Size = 16,
+				Bold = true,
+				ThemeColorIndex = ThemeColorIndexHelper.TryParse("Accent2")
+			}.ToFontStyle();
+		}
+
+		/// <summary>默认模板中 <c>Chart/TitleFont</c>。</summary>
+		public static FontStyle ChartTitleFontStyle()
+		{
+			return new FontConfig
+			{
+				Name = "+mn-lt",
+				NameFarEast = "+mn-ea",
+				Size = 11,
+				Bold = true,
+				ThemeColorIndex = ThemeColorIndexHelper.TryParse("Dark1")
+			}.ToFontStyle();
+		}
+
+		/// <summary>默认模板中 <c>Chart/LegendFont</c>。</summary>
+		public static FontStyle ChartLegendFontStyle()
+		{
+			return new FontConfig
+			{
+				Name = "+mn-lt",
+				NameFarEast = "+mn-ea",
+				Size = 8,
+				Bold = false,
+				ThemeColorIndex = ThemeColorIndexHelper.TryParse("Dark1")
+			}.ToFontStyle();
 		}
 	}
 

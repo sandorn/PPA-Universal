@@ -1,4 +1,5 @@
 using PPA.Core.Abstraction;
+using PPA.Core.Configuration;
 using NETOP = NetOffice.PowerPointApi;
 
 namespace PPA.Adapter.PowerPoint
@@ -10,11 +11,17 @@ namespace PPA.Adapter.PowerPoint
 	{
 		private readonly NETOP.Application _netApp;
 		private readonly object _nativeApp;
+		private readonly float _slideWidthFallback;
+		private readonly float _slideHeightFallback;
 
-		public PowerPointContext(NETOP.Application netApp, object nativeApp = null)
+		public PowerPointContext(NETOP.Application netApp, object nativeApp = null,
+			float slideWidthFallback = PpaConfigTemplateFallbacks.SlideWidthFallback,
+			float slideHeightFallback = PpaConfigTemplateFallbacks.SlideHeightFallback)
 		{
 			_netApp = netApp;
 			_nativeApp = nativeApp;
+			_slideWidthFallback = slideWidthFallback > 0 ? slideWidthFallback : PpaConfigTemplateFallbacks.SlideWidthFallback;
+			_slideHeightFallback = slideHeightFallback > 0 ? slideHeightFallback : PpaConfigTemplateFallbacks.SlideHeightFallback;
 		}
 
 		public PlatformType Platform => PlatformType.PowerPoint;
@@ -26,7 +33,7 @@ namespace PPA.Adapter.PowerPoint
 				try
 				{
 					var pres = _netApp?.ActivePresentation;
-					return pres != null ? new PowerPointPresentationContext(pres) : null;
+					return pres != null ? new PowerPointPresentationContext(pres, _slideWidthFallback, _slideHeightFallback) : null;
 				}
 				catch
 				{

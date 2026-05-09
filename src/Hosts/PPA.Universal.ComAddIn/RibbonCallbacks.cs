@@ -245,14 +245,14 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || shapes.Count != 2)
 				{
-					ShowMessage("交换大小和位置需要选择恰好 2 个形状");
+					ShowWarning("交换大小和位置需要选择恰好 2 个形状");
 					return;
 				}
 
 				var service = UniversalIntegration.GetService<IAlignmentService>();
 				if (service == null)
 				{
-					ShowMessage("对齐服务不可用");
+					ShowWarning("对齐服务不可用");
 					return;
 				}
 
@@ -266,7 +266,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"交换大小和位置失败: {ex.Message}", ex);
-				ShowMessage($"交换大小和位置失败: {ex.Message}");
+				ShowError($"交换大小和位置失败: {ex.Message}");
 			}
 		}
 
@@ -281,7 +281,7 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || !shapes.Any())
 				{
-					ShowMessage("请先选择要复制的形状");
+					ShowWarning("请先选择要复制的形状");
 					return;
 				}
 
@@ -300,7 +300,7 @@ namespace PPA.Universal.ComAddIn
 				var duplicateService = UniversalIntegration.GetService<IShapeDuplicateService>();
 				if (duplicateService == null)
 				{
-					ShowMessage("复制服务不可用");
+					ShowWarning("复制服务不可用");
 					return;
 				}
 
@@ -314,7 +314,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"矩阵复制失败: {ex.Message}", ex);
-				ShowMessage($"矩阵复制失败: {ex.Message}");
+				ShowError($"矩阵复制失败: {ex.Message}");
 			}
 		}
 
@@ -325,7 +325,7 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || !shapes.Any())
 				{
-					ShowMessage("请先选择要复制的形状");
+					ShowWarning("请先选择要复制的形状");
 					return;
 				}
 
@@ -344,7 +344,7 @@ namespace PPA.Universal.ComAddIn
 				var duplicateService = UniversalIntegration.GetService<IShapeDuplicateService>();
 				if (duplicateService == null)
 				{
-					ShowMessage("复制服务不可用");
+					ShowWarning("复制服务不可用");
 					return;
 				}
 
@@ -358,7 +358,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"线性复制失败: {ex.Message}", ex);
-				ShowMessage($"线性复制失败: {ex.Message}");
+				ShowError($"线性复制失败: {ex.Message}");
 			}
 		}
 
@@ -375,7 +375,7 @@ namespace PPA.Universal.ComAddIn
 				var visibilityService = UniversalIntegration.GetService<IShapeVisibilityService>();
 				if (visibilityService == null)
 				{
-					ShowMessage("可见性服务不可用");
+					ShowWarning("可见性服务不可用");
 					return;
 				}
 
@@ -394,7 +394,7 @@ namespace PPA.Universal.ComAddIn
 					var context = UniversalIntegration.Context;
 					if (context?.ActiveWindow?.ActiveSlide == null)
 					{
-						ShowMessage("无法获取当前幻灯片");
+						ShowWarning("无法获取当前幻灯片");
 						return;
 					}
 
@@ -408,7 +408,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"隐藏/显示操作失败: {ex.Message}", ex);
-				ShowMessage($"隐藏/显示操作失败: {ex.Message}");
+				ShowError($"隐藏/显示操作失败: {ex.Message}");
 			}
 		}
 
@@ -424,7 +424,7 @@ namespace PPA.Universal.ComAddIn
 				var creationService = UniversalIntegration.GetService<IShapeCreationService>();
 				if (creationService == null)
 				{
-					ShowMessage("形状创建服务不可用");
+					ShowWarning("形状创建服务不可用");
 					return;
 				}
 
@@ -443,7 +443,7 @@ namespace PPA.Universal.ComAddIn
 					var context = UniversalIntegration.Context;
 					if (context?.ActiveWindow?.ActiveSlide == null)
 					{
-						ShowMessage("无法获取当前幻灯片");
+						ShowWarning("无法获取当前幻灯片");
 						return;
 					}
 
@@ -458,7 +458,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"创建矩形失败: {ex.Message}", ex);
-				ShowMessage($"创建矩形失败: {ex.Message}");
+				ShowError($"创建矩形失败: {ex.Message}");
 			}
 		}
 
@@ -473,14 +473,14 @@ namespace PPA.Universal.ComAddIn
 				var cropService = UniversalIntegration.GetService<ICropService>();
 				if (cropService == null)
 				{
-					ShowMessage("裁除服务不可用");
+					ShowWarning("裁除服务不可用");
 					return;
 				}
 
 				var context = UniversalIntegration.Context;
 				if (context?.ActiveWindow?.ActiveSlide == null)
 				{
-					ShowMessage("无法获取当前幻灯片");
+					ShowWarning("无法获取当前幻灯片");
 					return;
 				}
 
@@ -507,7 +507,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"裁除边角料失败: {ex.Message}", ex);
-				ShowMessage($"裁除边角料失败: {ex.Message}");
+				ShowError($"裁除边角料失败: {ex.Message}");
 			}
 		}
 
@@ -522,21 +522,21 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || !shapes.Any())
 				{
-					ShowMessage("请先选择包含表格的形状");
+					ShowWarning("请先选择包含表格的形状");
 					return;
 				}
 
 				var tableShapes = shapes.Where(s => s?.IsTable == true && s.Table != null).ToList();
 				if (tableShapes.Count == 0)
 				{
-					ShowMessage("选中形状中没有表格");
+					ShowWarning("选中形状中没有表格");
 					return;
 				}
 
 				var formatService = UniversalIntegration.GetService<ITableFormatService>();
 				if (formatService == null)
 				{
-					ShowMessage("表格格式化服务不可用");
+					ShowWarning("表格格式化服务不可用");
 					return;
 				}
 
@@ -553,7 +553,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"格式化表格字体失败: {ex.Message}", ex);
-				ShowMessage($"格式化表格字体失败: {ex.Message}");
+				ShowError($"格式化表格字体失败: {ex.Message}");
 			}
 		}
 
@@ -564,32 +564,26 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || !shapes.Any())
 				{
-					ShowMessage("请先选择文本框");
+					ShowWarning("请先选择文本框");
 					return;
 				}
 
 				var textBoxShapes = shapes.Where(s => s?.HasTextFrame == true).ToList();
 				if (textBoxShapes.Count == 0)
 				{
-					ShowMessage("选中形状中没有文本框");
+					ShowWarning("选中形状中没有文本框");
 					return;
 				}
 
 				var textService = UniversalIntegration.GetService<ITextBatchService>();
 				if (textService == null)
 				{
-					ShowMessage("文本服务不可用");
+					ShowWarning("文本服务不可用");
 					return;
 				}
 
-				// 使用配置中的默认字体样式
-				var fontStyle = new PPA.Core.Abstraction.FontStyle
-				{
-					Name = "+mn-lt",
-					NameFarEast = "+mn-ea",
-					Size = 15,
-					Bold = false
-				};
+				var cfgRoot = UniversalIntegration.GetService<PPAConfig>();
+				var fontStyle = cfgRoot?.Text?.Font?.ToFontStyle() ?? PpaConfigTemplateFallbacks.TextBoxRibbonFontStyle();
 
 				using (CreateUndoScope("格式化文本框字体"))
 				{
@@ -601,7 +595,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"格式化文本框字体失败: {ex.Message}", ex);
-				ShowMessage($"格式化文本框字体失败: {ex.Message}");
+				ShowError($"格式化文本框字体失败: {ex.Message}");
 			}
 		}
 
@@ -612,21 +606,21 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || !shapes.Any())
 				{
-					ShowMessage("请先选择图表");
+					ShowWarning("请先选择图表");
 					return;
 				}
 
 				var chartShapes = shapes.Where(s => s?.IsChart == true).ToList();
 				if (chartShapes.Count == 0)
 				{
-					ShowMessage("选中形状中没有图表");
+					ShowWarning("选中形状中没有图表");
 					return;
 				}
 
 				var chartService = UniversalIntegration.GetService<IChartBatchService>();
 				if (chartService == null)
 				{
-					ShowMessage("图表服务不可用");
+					ShowWarning("图表服务不可用");
 					return;
 				}
 
@@ -641,7 +635,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"格式化图表字体失败: {ex.Message}", ex);
-				ShowMessage($"格式化图表字体失败: {ex.Message}");
+				ShowError($"格式化图表字体失败: {ex.Message}");
 			}
 		}
 
@@ -657,21 +651,21 @@ namespace PPA.Universal.ComAddIn
 
 				if (string.IsNullOrEmpty(find))
 				{
-					ShowMessage("查找内容不能为空");
+					ShowWarning("查找内容不能为空");
 					return;
 				}
 
 				var context = UniversalIntegration.Context;
 				if (context?.ActivePresentation == null)
 				{
-					ShowMessage("无法获取当前演示文稿");
+					ShowWarning("无法获取当前演示文稿");
 					return;
 				}
 
 				var textService = UniversalIntegration.GetService<ITextBatchService>();
 				if (textService == null)
 				{
-					ShowMessage("文本服务不可用");
+					ShowWarning("文本服务不可用");
 					return;
 				}
 
@@ -685,7 +679,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"查找替换失败: {ex.Message}", ex);
-				ShowMessage($"查找替换失败: {ex.Message}");
+				ShowError($"查找替换失败: {ex.Message}");
 			}
 		}
 
@@ -700,21 +694,21 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || !shapes.Any())
 				{
-					ShowMessage("请先选择包含表格的形状");
+					ShowWarning("请先选择包含表格的形状");
 					return;
 				}
 
 				var tableShapes = shapes.Where(s => s?.IsTable == true && s.Table != null).ToList();
 				if (tableShapes.Count == 0)
 				{
-					ShowMessage("选中形状中没有表格");
+					ShowWarning("选中形状中没有表格");
 					return;
 				}
 
 				var formatService = UniversalIntegration.GetService<ITableFormatService>();
 				if (formatService == null)
 				{
-					ShowMessage("表格格式化服务不可用");
+					ShowWarning("表格格式化服务不可用");
 					return;
 				}
 
@@ -737,7 +731,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"三线表格式化失败: {ex.Message}", ex);
-				ShowMessage($"三线表格式化失败: {ex.Message}");
+				ShowError($"三线表格式化失败: {ex.Message}");
 			}
 		}
 
@@ -746,11 +740,8 @@ namespace PPA.Universal.ComAddIn
 		{
 			try
 			{
-				var confirm = MessageBox.Show(
-					"将把当前演示文稿中全部表格设置为三线表样式（含各页组合内表格）。是否继续？",
-					"PPA Universal",
-					MessageBoxButtons.YesNo,
-					MessageBoxIcon.Warning);
+				var confirm = ComDialogChrome.ConfirmWarning(
+					"将把当前演示文稿中全部表格设置为三线表样式（含各页组合内表格）。是否继续？");
 				if (confirm != DialogResult.Yes)
 					return;
 
@@ -758,7 +749,7 @@ namespace PPA.Universal.ComAddIn
 				var batch = UniversalIntegration.GetService<ITableBatchService>();
 				if (batch == null || context?.ActivePresentation == null)
 				{
-					ShowMessage("批量表格服务不可用或无法获取演示文稿");
+					ShowWarning("批量表格服务不可用或无法获取演示文稿");
 					return;
 				}
 
@@ -773,7 +764,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"全稿表格三线表失败: {ex.Message}", ex);
-				ShowMessage($"全稿表格三线表失败: {ex.Message}");
+				ShowError($"全稿表格三线表失败: {ex.Message}");
 			}
 		}
 
@@ -801,14 +792,14 @@ namespace PPA.Universal.ComAddIn
 				var context = UniversalIntegration.Context;
 				if (context == null)
 				{
-					ShowMessage("应用上下文不可用，请重启加载项后重试");
+					ShowWarning("应用上下文不可用，请重启加载项后重试");
 					return;
 				}
 
 				var service = UniversalIntegration.GetService<IGlassCardService>();
 				if (service == null)
 				{
-					ShowMessage("毛玻璃卡片服务不可用");
+					ShowWarning("毛玻璃卡片服务不可用");
 					return;
 				}
 
@@ -824,7 +815,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"CreateGlassCard failed: {ex.Message}", ex);
-				ShowMessage($"创建毛玻璃卡片失败: {ex.Message}");
+				ShowError($"创建毛玻璃卡片失败: {ex.Message}");
 			}
 		}
 
@@ -865,7 +856,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"[Debug] Error: {ex.Message}", ex);
-				ShowMessage($"调试失败: {ex.Message}");
+				ShowError($"调试失败: {ex.Message}");
 			}
 		}
 
@@ -899,14 +890,11 @@ namespace PPA.Universal.ComAddIn
 			}
 		}
 
-		private void ShowMessage(string message)
-		{
-			MessageBox.Show(
-				message,
-				"PPA Universal",
-				MessageBoxButtons.OK,
-				MessageBoxIcon.Information);
-		}
+		private void ShowMessage(string message) => ComDialogChrome.NotifyInfo(message);
+
+		private void ShowWarning(string message) => ComDialogChrome.NotifyWarning(message);
+
+		private void ShowError(string message) => ComDialogChrome.NotifyError(message);
 
 		private IDisposable CreateUndoScope(string operationName)
 		{
@@ -938,14 +926,14 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || !shapes.Any())
 				{
-					ShowMessage("请先选择要对齐的形状");
+					ShowWarning("请先选择要对齐的形状");
 					return;
 				}
 
 				var service = UniversalIntegration.GetService<IAlignmentService>();
 				if (service == null)
 				{
-					ShowMessage("对齐服务不可用");
+					ShowWarning("对齐服务不可用");
 					return;
 				}
 
@@ -960,7 +948,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"Alignment failed: {ex.Message}", ex);
-				ShowMessage($"对齐操作失败: {ex.Message}");
+				ShowError($"对齐操作失败: {ex.Message}");
 			}
 		}
 
@@ -971,14 +959,14 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || shapes.Count < 3)
 				{
-					ShowMessage("分布操作需要选择至少 3 个形状");
+					ShowWarning("分布操作需要选择至少 3 个形状");
 					return;
 				}
 
 				var service = UniversalIntegration.GetService<IAlignmentService>();
 				if (service == null)
 				{
-					ShowMessage("对齐服务不可用");
+					ShowWarning("对齐服务不可用");
 					return;
 				}
 
@@ -993,7 +981,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"Distribution failed: {ex.Message}", ex);
-				ShowMessage($"分布操作失败: {ex.Message}");
+				ShowError($"分布操作失败: {ex.Message}");
 			}
 		}
 
@@ -1004,14 +992,14 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || shapes.Count < 2)
 				{
-					ShowMessage("尺寸操作需要选择至少 2 个形状");
+					ShowWarning("尺寸操作需要选择至少 2 个形状");
 					return;
 				}
 
 				var service = UniversalIntegration.GetService<IAlignmentService>();
 				if (service == null)
 				{
-					ShowMessage("对齐服务不可用");
+					ShowWarning("对齐服务不可用");
 					return;
 				}
 
@@ -1026,7 +1014,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"Size operation failed: {ex.Message}", ex);
-				ShowMessage($"尺寸操作失败: {ex.Message}");
+				ShowError($"尺寸操作失败: {ex.Message}");
 			}
 		}
 
@@ -1037,14 +1025,14 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || shapes.Count < 2)
 				{
-					ShowMessage("吸附操作需要选择至少 2 个形状");
+					ShowWarning("吸附操作需要选择至少 2 个形状");
 					return;
 				}
 
 				var service = UniversalIntegration.GetService<IAlignmentService>();
 				if (service == null)
 				{
-					ShowMessage("对齐服务不可用");
+					ShowWarning("对齐服务不可用");
 					return;
 				}
 
@@ -1058,7 +1046,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"吸附操作失败: {ex.Message}", ex);
-				ShowMessage($"吸附操作失败: {ex.Message}");
+				ShowError($"吸附操作失败: {ex.Message}");
 			}
 		}
 
@@ -1069,14 +1057,14 @@ namespace PPA.Universal.ComAddIn
 				var shapes = GetSelectedShapes();
 				if (shapes == null || shapes.Count < 2)
 				{
-					ShowMessage("延伸对齐操作需要选择至少 2 个形状");
+					ShowWarning("延伸对齐操作需要选择至少 2 个形状");
 					return;
 				}
 
 				var service = UniversalIntegration.GetService<IAlignmentService>();
 				if (service == null)
 				{
-					ShowMessage("对齐服务不可用");
+					ShowWarning("对齐服务不可用");
 					return;
 				}
 
@@ -1090,7 +1078,7 @@ namespace PPA.Universal.ComAddIn
 			catch (Exception ex)
 			{
 				UniversalIntegration.Logger?.LogError($"延伸对齐操作失败: {ex.Message}", ex);
-				ShowMessage($"延伸对齐操作失败: {ex.Message}");
+				ShowError($"延伸对齐操作失败: {ex.Message}");
 			}
 		}
 

@@ -141,7 +141,7 @@ namespace PPA.Universal
 			if (enableFileLogging)
 			{
 				var minLevel = ParseLogLevel(logging?.MinimumLogLevel) ?? LogLevel.Information;
-				var maxLogFiles = (logging?.MaxLogFiles ?? 0) > 0 ? logging.MaxLogFiles : 14;
+				var maxLogFiles = (logging?.MaxLogFiles ?? 0) > 0 ? logging.MaxLogFiles : 10;
 				int? maxLogAgeDays = (logging?.MaxLogAgeDays ?? 0) > 0 ? logging.MaxLogAgeDays : (int?)null;
 				var rollingSizeMb = (logging?.RollingFileSizeMB ?? 0) > 0 ? logging.RollingFileSizeMB : 50;
 				var maxFileSizeBytes = (long)rollingSizeMb * 1024 * 1024;
@@ -157,7 +157,7 @@ namespace PPA.Universal
 			_adapterFactory.RegisterAdapter(services, _platform);
 
 			// 注册应用程序上下文
-			var context = _adapterFactory.CreateContext(_app, _platform);
+			var context = _adapterFactory.CreateContext(_app, _platform, ppaConfig);
 			services.AddSingleton<IApplicationContext>(context);
 
 			// 构建服务提供者

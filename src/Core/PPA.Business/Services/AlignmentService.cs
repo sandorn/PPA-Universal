@@ -3,6 +3,7 @@ using System.Linq;
 using PPA.Business.Abstractions;
 using PPA.Business.Geometry;
 using PPA.Core.Abstraction;
+using PPA.Core.Configuration;
 using PPA.Logging;
 
 namespace PPA.Business.Services
@@ -15,12 +16,14 @@ namespace PPA.Business.Services
 		private readonly ILogger _logger;
 		private readonly IShapeOperations _shapeOps;
 		private readonly IApplicationContext _context;
+		private readonly PPAConfig _config;
 
-		public AlignmentService(ILogger logger, IShapeOperations shapeOps, IApplicationContext context)
+		public AlignmentService(ILogger logger, IShapeOperations shapeOps, IApplicationContext context, PPAConfig config)
 		{
 			_logger = logger ?? NullLogger.Instance;
 			_shapeOps = shapeOps;
 			_context = context;
+			_config = config;
 		}
 
 		public void Align(IEnumerable<IShapeContext> shapes, AlignmentType alignment, AlignmentReference reference)
@@ -66,8 +69,11 @@ namespace PPA.Business.Services
 
 		private float CalculateSlideReference(AlignmentType alignment, List<IShapeContext> shapes)
 		{
-			float slideWidth = _context?.ActivePresentation?.SlideWidth ?? 960f;
-			float slideHeight = _context?.ActivePresentation?.SlideHeight ?? 540f;
+			var d = _config?.Defaults;
+			float slideWidth = _context?.ActivePresentation?.SlideWidth
+				?? (d != null && d.SlideWidthFallback > 0 ? d.SlideWidthFallback : PpaConfigTemplateFallbacks.SlideWidthFallback);
+			float slideHeight = _context?.ActivePresentation?.SlideHeight
+				?? (d != null && d.SlideHeightFallback > 0 ? d.SlideHeightFallback : PpaConfigTemplateFallbacks.SlideHeightFallback);
 			var rects = shapes.Select(s => s.Bounds).ToList();
 			return ShapeAlignmentMath.CalculateSlideReference(alignment, slideWidth, slideHeight, rects);
 		}

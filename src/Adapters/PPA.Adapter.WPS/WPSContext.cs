@@ -1,4 +1,5 @@
 using PPA.Core.Abstraction;
+using PPA.Core.Configuration;
 
 namespace PPA.Adapter.WPS
 {
@@ -8,10 +9,16 @@ namespace PPA.Adapter.WPS
 	public class WPSContext : IApplicationContext
 	{
 		private readonly dynamic _app;
+		private readonly float _slideWidthFallback;
+		private readonly float _slideHeightFallback;
 
-		public WPSContext(dynamic app)
+		public WPSContext(dynamic app,
+			float slideWidthFallback = PpaConfigTemplateFallbacks.SlideWidthFallback,
+			float slideHeightFallback = PpaConfigTemplateFallbacks.SlideHeightFallback)
 		{
 			_app = app;
+			_slideWidthFallback = slideWidthFallback > 0 ? slideWidthFallback : PpaConfigTemplateFallbacks.SlideWidthFallback;
+			_slideHeightFallback = slideHeightFallback > 0 ? slideHeightFallback : PpaConfigTemplateFallbacks.SlideHeightFallback;
 		}
 
 		public PlatformType Platform => PlatformType.WPS;
@@ -23,7 +30,7 @@ namespace PPA.Adapter.WPS
 				try
 				{
 					dynamic pres = _app?.ActivePresentation;
-					return pres != null ? new WPSPresentationContext(pres) : null;
+					return pres != null ? new WPSPresentationContext(pres, _slideWidthFallback, _slideHeightFallback) : null;
 				}
 				catch
 				{

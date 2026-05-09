@@ -58,6 +58,7 @@ build\rebuild-register.bat
 
 ## 专题文档
 
+- [PPAConfig与Ribbon对应关系.md](PPAConfig与Ribbon对应关系.md)（配置文件与 Ribbon 按钮、兜底参数说明）
 - [Ribbon-manual-regression.md](Ribbon-manual-regression.md)（Ribbon 双宿主手工回归）
 - [项目完善规划.md](项目完善规划.md)
 - [功能扩展研究报告.md](功能扩展研究报告.md)

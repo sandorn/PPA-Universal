@@ -356,43 +356,45 @@ namespace PPA.Business.Services
 				return;
 			}
 
-			// 如果没有提供字体样式，使用配置优先 + 固定默认值兜底
-			if (fontStyle == null)
+			FontStyle headerCellStyle;
+			FontStyle dataCellStyle;
+			if (fontStyle != null)
+			{
+				headerCellStyle = dataCellStyle = fontStyle;
+				_logger.LogInformation($"格式化表格字体(统一): {fontStyle.Name}, 大小: {fontStyle.Size}");
+			}
+			else
 			{
 				var tableConfig = _config?.Table;
-				// 优先使用 DataRowFont，如果没有则使用 HeaderRowFont
-				var configFont = tableConfig?.DataRowFont ?? tableConfig?.HeaderRowFont;
-				fontStyle = new FontStyle
-				{
-					Name = string.IsNullOrWhiteSpace(configFont?.Name) ? "+mn-lt" : configFont.Name,
-					NameFarEast = string.IsNullOrWhiteSpace(configFont?.NameFarEast) ? "+mn-ea" : configFont.NameFarEast,
-					Size = (configFont?.Size ?? 0) > 0 ? configFont.Size : 15f,
-					Bold = configFont?.Bold ?? false,
-					ThemeColorIndex = configFont?.ThemeColorIndex
-				};
+				// 首行用表头字体（与三线表一致，通常 Bold=true），其余行用数据行字体
+				headerCellStyle = tableConfig?.HeaderRowFont?.ToFontStyle()
+					?? tableConfig?.DataRowFont?.ToFontStyle()
+					?? new FontConfig().ToFontStyle();
+				dataCellStyle = tableConfig?.DataRowFont?.ToFontStyle()
+					?? tableConfig?.HeaderRowFont?.ToFontStyle()
+					?? new FontConfig().ToFontStyle();
+				_logger.LogInformation(
+					$"格式化表格字体(表头/数据): 表头 Bold={headerCellStyle.Bold}, 数据行 Bold={dataCellStyle.Bold}");
 			}
-
-			_logger.LogInformation($"格式化表格字体: {fontStyle.Name}, 大小: {fontStyle.Size}");
 
 			try
 			{
-				// 遍历所有单元格，设置字体
 				for (int row = 1; row <= table.RowCount; row++)
 				{
+					var src = row == 1 ? headerCellStyle : dataCellStyle;
 					for (int col = 1; col <= table.ColumnCount; col++)
 					{
 						var cell = table.GetCell(row, col);
 						if (cell != null)
 						{
-							// 使用 SetFont 方法统一设置字体
-							var cellFontStyle = new PPA.Core.Abstraction.FontStyle
+							var cellFontStyle = new FontStyle
 							{
-								Name = fontStyle.Name,
-								NameFarEast = fontStyle.NameFarEast,
-								Size = fontStyle.Size,
-								Bold = fontStyle.Bold,
-								ColorRgb = fontStyle.ColorRgb,
-								ThemeColorIndex = fontStyle.ThemeColorIndex
+								Name = src.Name,
+								NameFarEast = src.NameFarEast,
+								Size = src.Size,
+								Bold = src.Bold,
+								ColorRgb = src.ColorRgb,
+								ThemeColorIndex = src.ThemeColorIndex
 							};
 							cell.SetFont(cellFontStyle);
 						}

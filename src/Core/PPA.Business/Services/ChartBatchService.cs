@@ -104,30 +104,10 @@ namespace PPA.Business.Services
 			_logger.LogInformation("图表字体格式化完成");
 		}
 
-		private FontStyle BuildDefaultChartTitleFontStyle()
-		{
-			var cfg = _config?.Chart?.TitleFont;
-			return new FontStyle
-			{
-				Name = string.IsNullOrWhiteSpace(cfg?.Name) ? "+mn-lt" : cfg.Name,
-				NameFarEast = string.IsNullOrWhiteSpace(cfg?.NameFarEast) ? "+mn-ea" : cfg.NameFarEast,
-				Size = (cfg?.Size ?? 0) > 0 ? cfg.Size : 11,
-				Bold = cfg?.Bold ?? false,
-				ThemeColorIndex = cfg?.ThemeColorIndex
-			};
-		}
+		private FontStyle BuildDefaultChartTitleFontStyle() =>
+			_config?.Chart?.TitleFont?.ToFontStyle() ?? PpaConfigTemplateFallbacks.ChartTitleFontStyle();
 
-		private FontStyle BuildDefaultChartLegendFontStyle()
-		{
-			var cfg = _config?.Chart?.LegendFont;
-			return new FontStyle
-			{
-				Name = string.IsNullOrWhiteSpace(cfg?.Name) ? "+mn-lt" : cfg.Name,
-				NameFarEast = string.IsNullOrWhiteSpace(cfg?.NameFarEast) ? "+mn-ea" : cfg.NameFarEast,
-				Size = (cfg?.Size ?? 0) > 0 ? cfg.Size : 8,
-				Bold = cfg?.Bold ?? false,
-				ThemeColorIndex = cfg?.ThemeColorIndex
-			};
-		}
+		private FontStyle BuildDefaultChartLegendFontStyle() =>
+			_config?.Chart?.LegendFont?.ToFontStyle() ?? PpaConfigTemplateFallbacks.ChartLegendFontStyle();
 	}
 }

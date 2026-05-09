@@ -5,6 +5,7 @@ using PPA.Adapter.PowerPoint.DI;
 using PPA.Adapter.WPS;
 using PPA.Adapter.WPS.DI;
 using PPA.Core.Abstraction;
+using PPA.Core.Configuration;
 using PPA.Logging;
 using NETOP = NetOffice.PowerPointApi;
 using NetTable = NetOffice.PowerPointApi.Table;
@@ -49,15 +50,19 @@ namespace PPA.Universal.Platform
 		/// <summary>
 		/// 根据应用程序对象创建应用程序上下文
 		/// </summary>
-		public IApplicationContext CreateContext(object app, PlatformType platform)
+		public IApplicationContext CreateContext(object app, PlatformType platform, PPAConfig config = null)
 		{
+			var d = config?.Defaults;
+			var wf = d != null && d.SlideWidthFallback > 0 ? d.SlideWidthFallback : PpaConfigTemplateFallbacks.SlideWidthFallback;
+			var hf = d != null && d.SlideHeightFallback > 0 ? d.SlideHeightFallback : PpaConfigTemplateFallbacks.SlideHeightFallback;
+
 			switch (platform)
 			{
 				case PlatformType.PowerPoint:
-					return CreatePowerPointContext(app);
+					return CreatePowerPointContext(app, wf, hf);
 
 				case PlatformType.WPS:
-					return CreateWPSContext(app);
+					return CreateWPSContext(app, wf, hf);
 
 				default:
 					throw new InvalidOperationException($"不支持的平台类型: {platform}");
@@ -67,28 +72,28 @@ namespace PPA.Universal.Platform
 		/// <summary>
 		/// 创建 PowerPoint 上下文
 		/// </summary>
-		private IApplicationContext CreatePowerPointContext(object app)
+		private IApplicationContext CreatePowerPointContext(object app, float slideWidthFallback, float slideHeightFallback)
 		{
 			_logger.LogInformation("创建 PowerPoint 上下文");
 
 			// 如果是 NetOffice Application
 			if (app is NETOP.Application netApp)
 			{
-				return new PowerPointContext(netApp);
+				return new PowerPointContext(netApp, null, slideWidthFallback, slideHeightFallback);
 			}
 
 			// 如果是原生 COM 对象，创建 NetOffice 包装器
 			var wrappedApp = new NETOP.Application(null, app);
-			return new PowerPointContext(wrappedApp, app);
+			return new PowerPointContext(wrappedApp, app, slideWidthFallback, slideHeightFallback);
 		}
 
 		/// <summary>
 		/// 创建 WPS 上下文
 		/// </summary>
-		private IApplicationContext CreateWPSContext(object app)
+		private IApplicationContext CreateWPSContext(object app, float slideWidthFallback, float slideHeightFallback)
 		{
 			_logger.LogInformation("创建 WPS 上下文");
-			return new WPSContext(app);
+			return new WPSContext(app, slideWidthFallback, slideHeightFallback);
 		}
 
 		/// <summary>
